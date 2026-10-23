@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Savio Cavalcante · Design, edição, motion e web</title>
+<meta name="description" content="Portfólio de Savio Cavalcante: designer, editor de vídeo, motion designer e web designer.">
+<meta name="theme-color" content="#f3f3f0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300..800&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<link rel="stylesheet" href="v2.css">
+<script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
+</head>
+<body>
+
+<header class="hud hud-top">
+  <button class="mark" type="button" data-home data-t-attr="aria-label:ui.home">
+    <span class="mark-text">sc</span>
+  </button>
+  <div class="hud-actions">
+    <button type="button" data-lang-toggle data-t-attr="aria-label:ui.lang"><span data-t="ui.langShort">EN</span></button>
+    <button type="button" data-motion-toggle class="motion-toggle"><span data-t="ui.motion">Animação</span></button>
+    <button type="button" data-map-toggle aria-pressed="false"><span data-map-label data-t="ui.map">Mapa</span></button>
+  </div>
+</header>
+
+<main class="viewport" id="viewport">
+  <canvas class="poem" aria-hidden="true"></canvas>
+  <div class="world" id="world">
+
+    <section class="stop panel panel--intro" data-key="intro" data-hash="apresentacao" aria-labelledby="t-intro">
+      <div class="panel-inner">
+        <h1 class="intro-name" id="t-intro"><span>savio</span> <span>cavalcante</span></h1>
+        <ul class="intro-roles" data-roles></ul>
+        <p class="intro-lead" data-t="lead"></p>
+      </div>
+    </section>
+
+    <section class="stop panel panel--design" data-key="design" data-hash="design" aria-labelledby="t-design">
+      <div class="panel-inner">
+        <div class="copy">
+          <h2 class="title" id="t-design" data-t="ch.design">Design</h2>
+          <p class="line" data-t="design.line"></p>
+          <p class="caption" data-t="v2.design.caption"></p>
+        </div>
+        <div class="modgrid" aria-hidden="true">
+          <span class="mg-lines"></span>
+          <span class="mg mg-sq" style="--w:2;--h:2"></span>
+          <span class="mg mg-dot"></span>
+          <span class="mg mg-l mg-voice">d</span><span class="mg mg-l">e</span><span class="mg mg-l">s</span>
+          <span class="mg mg-l">i</span><span class="mg mg-l">g</span><span class="mg mg-l">n</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="stop panel panel--motion" data-key="motion" data-hash="movimento" aria-labelledby="t-motion">
+      <div class="panel-inner">
+        <div class="kinetic" aria-hidden="true"><div class="kinetic-word"></div></div>
+        <div class="copy">
+          <h2 class="title" id="t-motion" data-t="ch.motion">Movimento</h2>
+          <p class="line" data-t="motion.line"></p>
+          <p class="sr-only" data-t="v2.motion.sr"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="stop panel panel--play" data-key="play" data-hash="interacao" aria-labelledby="t-play">
+      <div class="panel-inner">
+        <div class="copy">
+          <h2 class="title" id="t-play" data-t="ch.play">Interação</h2>
+          <p class="line" data-t="play.line"></p>
+          <p class="caption" data-t="v2.play.caption"></p>
+        </div>
+        <div class="bicho-wrap" data-no-drag data-no-wheel>
+          <canvas class="bicho" role="img" data-t-attr="aria-label:v2.play.sr"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="works" aria-labelledby="t-works">
+      <div data-works></div>
+    </section>
+
+    <section class="stop panel panel--close" data-key="close" data-hash="contato" aria-labelledby="t-close">
+      <div class="panel-inner">
+        <div class="close-photo" data-photo></div>
+        <div class="close-body">
+          <h2 class="title" id="t-close" data-t="ch.close">Onde me encontrar</h2>
+          <ul class="socials" data-socials></ul>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<nav class="hud hud-bottom" data-t-attr="aria-label:ui.chapters">
+  <ol class="spine" data-spine></ol>
+  <span class="where" aria-hidden="true"></span>
+  <button type="button" class="next" data-next><span class="next-label"></span></button>
+</nav>
+<p class="hint" data-hint></p>
+
+<script src="../shared/content.js"></script>
+<script src="../shared/site.js"></script>
+<script src="../shared/map.js"></script>
+<script src="v2.js"></script>
+</body>
+</html>

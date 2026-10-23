@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pt-BR" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Savio Cavalcante · Design, edição, motion e web</title>
+<meta name="description" content="Portfólio de Savio Cavalcante: designer, editor de vídeo, motion designer e web designer.">
+<meta name="theme-color" content="#ffd100">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,300..900&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<link rel="stylesheet" href="v3.css">
+<script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
+</head>
+<body>
+
+<div class="intro" id="intro" aria-hidden="true">
+  <div class="cut cut--1"><span>Savio</span></div>
+  <div class="cut cut--2"><span>Cavalcante</span></div>
+  <div class="cut cut--3"></div>
+  <button class="intro-skip" type="button" data-t="v3.skip">Pular</button>
+</div>
+
+<header class="hud hud-top">
+  <button class="mark tag" type="button" data-home data-t-attr="aria-label:ui.home">
+    <span class="mark-text">SC</span>
+  </button>
+  <div class="hud-actions">
+    <button type="button" class="tag" data-lang-toggle data-t-attr="aria-label:ui.lang"><span data-t="ui.langShort">EN</span></button>
+    <button type="button" class="tag motion-toggle" data-motion-toggle><span data-t="ui.motion">Animação</span></button>
+    <button type="button" class="tag" data-map-toggle aria-pressed="false"><span data-map-label data-t="ui.map">Mapa</span></button>
+  </div>
+</header>
+
+<main class="viewport" id="viewport">
+  <div class="world" id="world">
+    <div class="wall" aria-hidden="true"></div>
+    <div class="shouts" aria-hidden="true"></div>
+
+    <section class="stop" data-key="intro" data-hash="apresentacao" aria-labelledby="t-intro">
+      <div class="poster poster--paper poster--intro">
+        <h1 class="intro-name" id="t-intro">
+          <span class="nm nm--1" data-fit="0.98">Savio</span>
+          <span class="nm nm--2" data-fit="1.04">Cavalcante</span>
+        </h1>
+        <div class="band" aria-hidden="true"><div class="band-run"></div></div>
+        <p class="sr-only" data-roles-text></p>
+        <p class="intro-lead" data-t="lead"></p>
+      </div>
+    </section>
+
+    <section class="stop" data-key="design" data-hash="design" aria-labelledby="t-design">
+      <div class="poster poster--ink poster--design">
+        <h2 class="shout shout--case" id="t-design" data-case data-t-attr="aria-label:ch.design"></h2>
+        <div class="copy">
+          <p class="line" data-t="design.line"></p>
+          <p class="caption" data-t="v3.design.caption" data-touch-t="v3.design.caption.touch"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="stop" data-key="motion" data-hash="movimento" aria-labelledby="t-motion">
+      <div class="poster poster--paper poster--motion">
+        <h2 class="shout shout--slam" id="t-motion" data-slam data-t-attr="aria-label:ch.motion"></h2>
+        <ol class="beats" aria-hidden="true">
+          <li data-t="v3.beat.1"></li><li data-t="v3.beat.2"></li><li data-t="v3.beat.3"></li>
+        </ol>
+        <div class="copy">
+          <p class="line" data-t="motion.line"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="stop" data-key="play" data-hash="interacao" aria-labelledby="t-play">
+      <div class="poster poster--ink poster--play">
+        <div class="play-head">
+          <h2 class="shout shout--small" id="t-play" data-t="ch.play">Interação</h2>
+          <p class="line" data-t="play.line"></p>
+          <p class="caption" data-t="v3.play.caption"></p>
+          <button type="button" class="tag tag--light" data-reset data-t="v3.play.reset">Derrubar de novo</button>
+        </div>
+        <div class="physics" data-no-drag data-no-wheel>
+          <canvas class="physics-canvas" role="img" data-t-attr="aria-label:v3.play.sr"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="works" aria-labelledby="t-works">
+      <h2 class="sr-only" id="t-works" data-t="ch.works">Trabalhos recentes</h2>
+      <div data-works></div>
+    </section>
+
+    <section class="stop" data-key="close" data-hash="contato" aria-labelledby="t-close">
+      <div class="poster poster--paper poster--close">
+        <div class="close-side">
+          <div class="close-photo" data-photo></div>
+          <h2 class="close-title" id="t-close" data-t="ch.close">Onde me encontrar</h2>
+          <p class="close-name">Savio Cavalcante</p>
+          <p class="close-roles" data-roles-line></p>
+        </div>
+        <ul class="socials" data-socials></ul>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<nav class="hud hud-bottom" data-t-attr="aria-label:ui.chapters">
+  <ol class="doors" data-doors></ol>
+  <button type="button" class="tag tag--next" data-next><span class="next-label"></span></button>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script src="../shared/content.js"></script>
+<script src="../shared/site.js"></script>
+<script src="../shared/map.js"></script>
+<script src="v3.js"></script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="pt-BR" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Savio Cavalcante · Design, edição, motion e web</title>
+<meta name="description" content="Portfólio de Savio Cavalcante: designer, editor de vídeo, motion designer e web designer.">
+<meta name="theme-color" content="#050505">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,300..900;1,62..125,300..900&display=swap">
+<link rel="stylesheet" href="../shared/base.css">
+<link rel="stylesheet" href="v1.css">
+<script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
+</head>
+<body>
+
+<div class="intro" aria-hidden="true">
+  <svg class="intro-leader" viewBox="-100 -100 200 200">
+    <line class="intro-cross" x1="-400" y1="0" x2="400" y2="0"/>
+    <line class="intro-cross" x1="0" y1="-400" x2="0" y2="400"/>
+    <circle class="intro-ring" r="64" pathLength="1"/>
+    <circle class="intro-ring intro-ring--in" r="54" pathLength="1"/>
+    <line class="intro-hand" x1="0" y1="0" x2="0" y2="-74"/>
+    <circle class="intro-cue" cx="58" cy="-58" r="2.6"/>
+  </svg>
+  <span class="intro-tc">00:00:00:00</span>
+</div>
+
+<header class="hud hud-top">
+  <button class="mark" type="button" data-home data-t-attr="aria-label:ui.home">
+    <span class="mark-text">SC</span>
+  </button>
+  <div class="hud-actions">
+    <button type="button" data-lang-toggle data-t-attr="aria-label:ui.lang"><span data-t="ui.langShort">EN</span></button>
+    <button type="button" data-motion-toggle class="motion-toggle"><span data-t="ui.motion">Animação</span></button>
+  </div>
+</header>
+
+<main class="film" id="film">
+
+  <section class="scene" id="apresentacao" data-scene="title" style="--len: 3.5" aria-labelledby="t-intro">
+    <div class="stage">
+      <div class="frame frame--title">
+        <canvas class="title-light" aria-hidden="true"></canvas>
+        <div class="sign" aria-hidden="true">
+          <svg viewBox="1139 1286 1095 1051"><path pathLength="1" d="M2214.42 1480.5c-15.27,-260.93 -1231.63,-60.61 -1033.63,163.5 156.82,177.48 956.57,133.69 912.65,528.95 -23.92,215.3 -619.64,224.87 -542.91,-223.02 33.31,-194.45 523.17,-281.6 438.86,-414.32 -24.3,-38.25 -336.52,-312.14 -374.42,-205.23 -34.31,96.77 -63.58,623.52 -63.58,742.83 -1.21,-1.24 81.66,-299.99 88.69,-342.28 17.14,-103.12 29.85,-121.51 89.98,18.8 120.08,280.19 -41.74,291.83 49.95,131.03 35.42,-62.13 177.4,-24.04 45.92,-19.37 -99.65,3.53 235.9,-34.82 70.75,11.33l-18.8 9.62"/></svg>
+        </div>
+        <h1 class="name" id="t-intro">
+          <span class="name-line" data-fit>Savio</span>
+          <span class="name-line" data-fit>Cavalcante</span>
+        </h1>
+        <div class="title-sub">
+          <p class="roles" aria-hidden="true"><span class="cells"></span></p>
+          <p class="sr-only" data-roles-text></p>
+          <p class="lead" data-t="v1.lead"></p>
+          <p class="title-play">
+            <span class="title-box"><span data-t="v1.box">Clique, arraste, faça o que quiser!</span><span class="title-drop" aria-hidden="true"><svg viewBox="0 0 24 60"><path d="M4 6L12 14L20 6"/><path d="M4 24L12 32L20 24"/><path d="M4 42L12 50L20 42"/></svg></span></span>
+          </p>
+        </div>
+        <p class="title-hint" data-hint></p>
+        <span class="title-zone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4V19M6 13L12 19L18 13"/></svg><span data-t="v1.box.zone">ARREMESSE</span></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" id="design" data-scene="design" style="--len: 4" aria-labelledby="t-design">
+    <div class="stage">
+      <div class="frame frame--design">
+        <canvas class="lattice" aria-hidden="true"></canvas>
+        <div class="design-copy">
+          <h2 class="chapter-title" id="t-design" data-t="v1.design.title">Design</h2>
+          <p class="chapter-line design-claim" data-t="v1.design.claim">A arte de brincar com o:</p>
+          <button type="button" class="caos" data-caos aria-pressed="false"></button>
+          <p class="chapter-caption design-caption" data-t="v1.design.caption"></p>
+        </div>
+        <div class="monitor-area">
+          <div class="monitor">
+            <span class="m-safe" aria-hidden="true"></span>
+            <span class="m-third m-third--v1" aria-hidden="true"></span><span class="m-third m-third--v2" aria-hidden="true"></span>
+            <span class="m-third m-third--h1" aria-hidden="true"></span><span class="m-third m-third--h2" aria-hidden="true"></span>
+            <svg class="m-blob" viewBox="-1 -1 2 2" aria-hidden="true" focusable="false"><defs><clipPath id="m-blob-clip"><path d=""/></clipPath></defs><path class="m-blob-fill" d=""/><image class="m-blob-img" clip-path="url(#m-blob-clip)" preserveAspectRatio="none"/></svg>
+            <canvas class="m-shapes" aria-hidden="true"></canvas>
+            <span class="m-bar" aria-hidden="true"></span>
+            <span class="m-words" aria-hidden="true"></span>
+            <span class="m-text" aria-hidden="true" data-t="v1.design.sub"></span>
+            <span class="m-ratio" aria-hidden="true">16:9</span>
+            <span class="m-handle" role="slider" tabindex="0" aria-valuemin="0.5" aria-valuemax="2.2" data-t-attr="aria-label:v1.design.handle"></span>
+          </div>
+          <p class="sr-only" data-t="v1.design.sr"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" id="interacao" data-scene="play" style="--len: 3.85" aria-labelledby="t-play">
+    <div class="stage">
+      <div class="frame frame--play">
+        <canvas class="play-bg" aria-hidden="true"></canvas>
+        <div class="play-copy">
+          <h2 class="chapter-title" id="t-play" data-t="v1.play.title">Colorir é uma dança</h2>
+          <p class="chapter-line" data-t="v1.play.line">E a interação é o que cria a experiência</p>
+        </div>
+        <div class="graph-wrap">
+          <svg class="graph" viewBox="-0.22 -0.32 1.44 1.64" role="group" data-t-attr="aria-label:v1.play.graph">
+            <rect class="graph-box" x="0" y="0" width="1" height="1"/>
+            <g class="graph-grid"></g>
+            <line class="graph-arm graph-arm--1" x1="0" y1="1" x2="0" y2="1"/>
+            <line class="graph-arm graph-arm--2" x1="1" y1="0" x2="1" y2="0"/>
+            <line class="graph-guide guide-x" x1="0" y1="1" x2="0" y2="1"/>
+            <line class="graph-guide guide-y" x1="0" y1="1" x2="0" y2="1"/>
+            <path class="graph-curve" d=""/>
+            <g class="rider-trail"><circle class="rider-ghost" r="0"/><circle class="rider-ghost" r="0"/><circle class="rider-ghost" r="0"/><circle class="rider-ghost" r="0"/><circle class="rider-ghost" r="0"/></g>
+            <circle class="graph-halo" r="0" cx="0" cy="1"/>
+            <circle class="graph-rider" r="0.026" cx="0" cy="1"/>
+            <circle class="graph-ring" r="0"/>
+            <circle class="graph-ring" r="0"/>
+            <g class="graph-handle" data-h="1" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="1">
+              <circle class="graph-hit" r="0.08"/><circle class="graph-knob" r="0.028"/>
+            </g>
+            <g class="graph-handle" data-h="2" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="1">
+              <circle class="graph-hit" r="0.08"/><circle class="graph-knob" r="0.028"/>
+            </g>
+          </svg>
+          <span class="graph-grip" data-h="1" aria-hidden="true"></span>
+          <span class="graph-grip" data-h="2" aria-hidden="true"></span>
+          <span class="note note--mess" aria-hidden="true">
+            <span class="note-word" data-t="v1.play.mess">“bagunce como um artista”</span>
+            <svg class="note-arrow note-arrow--r" viewBox="0 0 64 36"><path pathLength="1" d="M3 9C20 2 40 6 55 25"/><path pathLength="1" d="M44 26L56 26L55 14"/></svg>
+            <svg class="note-arrow note-arrow--d" viewBox="0 0 40 58"><path pathLength="1" d="M7 3C3 22 11 39 30 51"/><path pathLength="1" d="M19 52L31 52L28 40"/></svg>
+          </span>
+        </div>
+        <div class="play-tools">
+          <div class="presets" role="group" data-t-attr="aria-label:v1.play.presets">
+            <button type="button" data-preset="linear" data-t="v1.curve.linear">Linear</button>
+            <button type="button" data-preset="soft" data-t="v1.curve.soft">Suave</button>
+            <button type="button" data-preset="out" data-t="v1.curve.out">Saída</button>
+            <button type="button" data-preset="back" data-t="v1.curve.back">Elástico</button>
+          </div>
+          <p class="cor" aria-hidden="true" data-t="v1.play.cor">Cor</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" id="trabalhos" data-scene="works" style="--len: 3.6" aria-labelledby="t-works">
+    <div class="stage">
+      <div class="frame frame--works">
+        <div class="onion">
+          <svg class="onion-svg" viewBox="0 0 1000 360" preserveAspectRatio="xMidYMid meet">
+            <path class="onion-path" d="" aria-hidden="true"/>
+            <path class="onion-run" d="" pathLength="1000" aria-hidden="true"/>
+            <g class="onion-ghosts" aria-hidden="true"></g>
+            <circle class="onion-dot" r="24" cx="0" cy="0" aria-hidden="true"/>
+          </svg>
+        </div>
+        <div class="folders"></div>
+        <button type="button" class="note note--open" tabindex="-1" aria-hidden="true">
+          <span class="note-word" data-t="v1.works.openNote">abrir</span>
+          <svg class="note-arrow note-arrow--r" viewBox="0 0 64 36"><path pathLength="1" d="M3 9C20 2 40 6 55 25"/><path pathLength="1" d="M44 26L56 26L55 14"/></svg>
+          <svg class="note-arrow note-arrow--d" viewBox="0 0 40 58"><path pathLength="1" d="M7 3C3 22 11 39 30 51"/><path pathLength="1" d="M19 52L31 52L28 40"/></svg>
+        </button>
+        <div class="works-copy">
+          <h2 class="chapter-title" id="t-works" data-t="ch.works">Trabalhos recentes</h2>
+          <p class="works-readout" aria-hidden="true"><span class="readout-count"></span><span class="readout-work"></span></p>
+        </div>
+        <p class="sr-only" data-t="v1.works.sr"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene scene--reels" id="videos" data-scene="reels" style="--len: 4.8" data-t-attr="aria-label:a.reels">
+    <div class="stage">
+      <div class="strip" data-works></div>
+    </div>
+  </section>
+
+  <section class="scene scene--close" id="contato" data-scene="close" style="--len: 1" aria-labelledby="t-close">
+    <div class="stage">
+      <div class="frame frame--credits">
+        <canvas class="kgrid" aria-hidden="true"></canvas>
+        <div class="credits">
+          <div class="credits-photo" data-photo></div>
+          <h2 class="credits-title" id="t-close" data-t="ch.close">Onde me encontrar</h2>
+          <ul class="credits-list" data-socials></ul>
+          <p class="credits-name">Savio Cavalcante</p>
+          <p class="credits-roles" data-roles-line></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="hud hud-bottom" data-t-attr="aria-label:ui.chapters">
+  <ol class="index" data-index></ol>
+  <span class="timecode" aria-hidden="true">00:00:00:00</span>
+  <button type="button" class="next" data-next>
+    <span class="cue" aria-hidden="true"></span>
+    <span class="next-label"></span>
+  </button>
+</nav>
+
+<div class="grain" aria-hidden="true"></div>
+
+<script src="../shared/content.js"></script>
+<script src="../shared/site.js"></script>
+<script src="mesh.js"></script>
+<script src="kinetic.js"></script>
+<script src="lattice.js"></script>
+<script src="shapes.js"></script>
+<script src="cenas.js"></script>
+<script src="v1.js"></script>
+</body>
+</html>
