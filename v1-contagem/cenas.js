@@ -34,14 +34,13 @@
       'v1.box': 'Clique, arraste, faça o que quiser!',
       'v1.box.zone': 'ARREMESSE',
       'v1.design.title': 'Design',
-      'v1.design.caption': 'Organizamos o caos para criar forma, desmontamos a forma para gerar movimento…',
-      'v1.design.sub': 'E o caos volta se tornar design!',
+      'v1.design.sub': 'E o caos volta a se tornar design!',
       'v1.design.formats': 'Formatos',
       'v1.design.claim': 'A arte de brincar com o:',
       'v1.design.caos': 'caos',
       'v1.design.caosLabel': 'caos: ordenar ou desordenar as letras',
       'v1.design.handle': 'Proporção do quadro. Use as setas para mudar.',
-      'v1.design.sr': 'Um quadro com uma forma fluida e uma frase em corrente: movimento gera forma, forma gera movimento. Embaixo: e o caos volta se tornar design! A composição se reorganiza em cada proporção.',
+      'v1.design.sr': 'Um quadro com uma forma fluida e uma frase em corrente: movimento gera forma, forma gera movimento. Embaixo: e o caos volta a se tornar design! A composição se reorganiza em cada proporção.',
       'v1.w.motion': 'movimento',
       'v1.w.makes': 'gera',
       'v1.w.form': 'forma',
@@ -53,7 +52,9 @@
       'v1.works.watch': 'Ver o vídeo',
       'v1.works.openNote': 'abrir',
       'v1.play.title': 'Colorir é uma dança',
-      'v1.play.line': 'E a interação é o que cria a experiência',
+      'v1.play.line': 'Interagir é o que cria a',
+      'v1.play.exp': 'experiência',
+      'v1.play.try': 'Teste uma curva',
       'v1.play.graph': 'Editor de curva de tempo',
       'v1.play.presets': 'Curvas prontas',
       'v1.play.cor': 'Cor',
@@ -73,7 +74,6 @@
       'v1.box': 'Click, drag, do whatever you want!',
       'v1.box.zone': 'THROW IT',
       'v1.design.title': 'Design',
-      'v1.design.caption': 'We organize chaos to create form, then take form apart to generate motion…',
       'v1.design.sub': 'And chaos turns back into design!',
       'v1.design.formats': 'Formats',
       'v1.design.claim': 'The art of playing with:',
@@ -92,7 +92,9 @@
       'v1.works.watch': 'Watch the video',
       'v1.works.openNote': 'open',
       'v1.play.title': 'Coloring is a dance',
-      'v1.play.line': 'And interaction is what creates the experience',
+      'v1.play.line': 'Interacting is what creates the',
+      'v1.play.exp': 'experience',
+      'v1.play.try': 'Try a curve',
       'v1.play.graph': 'Timing curve editor',
       'v1.play.presets': 'Preset curves',
       'v1.play.cor': 'Color',
@@ -319,8 +321,8 @@
        foi jogada. Parada, chama de tempos em tempos: treme ou dá um puxão, e pisca a marca de
        troca de rolo no canto. */
     var tbox = $('.title-box');
-    var bx = { x: 0, y: 0, vx: 0, vy: 0, r: -2.4, vr: 0, lean: -2.4, lift: 0, hover: false, drag: null, wob: -1, next: 0, calls: 0, awake: false };
-    var boxLim = null, subOn = false;
+    var bx = { x: 0, y: 0, vx: 0, vy: 0, r: -2.4, vr: 0, lean: -2.4, lift: 0, hover: false, drag: null, wob: -1, next: 0, calls: 0, awake: false, known: false, inviting: false, thrown: false };
+    var boxLim = null, subOn = false, signOn = false;
     tbox.style.transform = 'rotate(' + bx.lean + 'deg)';
     function boxLimits() {
       if (boxLim) return boxLim;
@@ -337,8 +339,21 @@
       bx.awake = true;
     }
     function shiverBox() { bx.wob = performance.now(); cueBox(); }
-    function tugBox(dir) { bx.vx += dir * 420; cueBox(); }
     function hopBox() { bx.vy -= 560; cueBox(); }
+    // o mergulho: ela desce um pouco e volta, e as setas piscam embaixo, mostrando para onde jogar
+    var hintTimer = 0;
+    function dipBox() {
+      bx.vy += 520;
+      cueBox();
+      title.classList.add('is-hint');
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(function () { title.classList.remove('is-hint'); }, 1300);
+    }
+    // enquanto ninguém mexeu nela, a cor pulsa para tungstênio e volta (só opacidade: leve)
+    function setInvite() {
+      var on = subOn && cur === 'title' && !bx.known && motionOn();
+      if (on !== bx.inviting) { bx.inviting = on; title.classList.toggle('is-inviting', on); }
+    }
 
     tbox.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -356,7 +371,7 @@
       var d = bx.drag;
       if (!d || e.pointerId !== d.id) return;
       var dx = (e.clientX - d.px) / d.sc, dy = (e.clientY - d.py) / d.sc, lim = boxLimits(), now = performance.now();
-      if (Math.hypot(dx, dy) > 4 && !d.moved) { d.moved = true; title.classList.add('is-pulling'); }
+      if (Math.hypot(dx, dy) > 4 && !d.moved) { d.moved = true; bx.known = true; setInvite(); title.classList.add('is-pulling'); }
       bx.x = clamp(d.x0 + dx, lim.x0, lim.x1);
       bx.y = clamp(d.y0 + dy, lim.y0, lim.y1);
       d.pts.push({ x: bx.x, y: bx.y, t: now });
@@ -431,11 +446,12 @@
     }
     function tickBox(dt) {
       var live = motionOn(), now = performance.now(), d = bx.drag, s = Math.min(dt, 40) / 1000;
-      // com o bloco inteiro à vista, ela chama: primeiro treme, depois puxa para um lado, treme, puxa para o outro
-      if (live && !d && cur === 'title' && sCur > 0.97 && !E.overview() && clock >= bx.next) {
-        if (bx.calls % 2) tugBox(bx.calls % 4 === 1 ? 1 : -1); else shiverBox();
+      // com o bloco inteiro à vista, ela chama: treme, mergulha para baixo, treme, mergulha;
+      // depois que alguém já a pegou, chama bem menos
+      if (live && !d && !bx.thrown && cur === 'title' && sCur > 0.97 && !E.overview() && clock >= bx.next) {
+        if (bx.calls % 2) dipBox(); else shiverBox();
         bx.calls++;
-        bx.next = clock + 6.5;
+        bx.next = clock + (bx.known ? 7 : 3.4);
       }
       if (!bx.awake) return;
       if (d) {
@@ -516,7 +532,8 @@
       // sem animação, a palavra já aparece ordenada
       if (caos.ordered || !motionOn()) caosOrder(true); else caosScramble(true);
     }
-    // o quadrado tem a largura da palavra do título, sem passar da altura que sobra na coluna
+    // o quadrado tem a largura da palavra do título (título, frase e quadrado formam um bloco só),
+    // sem passar da altura que sobra na coluna
     function fitCaos() {
       var frame = caosEl.closest('.frame'), copy = caosEl.parentNode, head = $('#t-design');
       if (!frame || !frame.clientHeight || !head.firstChild) return;
@@ -528,8 +545,8 @@
       var inner = frame.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
       var portrait = frame.clientWidth / frame.clientHeight < 1;
       var rows = Math.ceil(caos.n / caos.cols);
-      var avail = portrait ? inner * 0.22 : inner - (copy.offsetHeight - caosEl.offsetHeight) - 6;
-      var cell = Math.max(24, Math.min(tw * 0.8 / caos.cols, avail / rows));
+      var avail = portrait ? inner * 0.3 : inner - (copy.offsetHeight - caosEl.offsetHeight) - 6;
+      var cell = Math.max(24, Math.min(tw / caos.cols, avail / rows));
       caosEl.style.fontSize = (cell / 1.16).toFixed(1) + 'px';
     }
     function placeLetter(l, cell, rot, delay) {
@@ -1404,8 +1421,99 @@
       pluck.dx = 0.05 * env * Math.sin(s * TAU * 3.7 + 1.1);
     }
     function shownBez() {
-      if (!pluck) return bez;
-      return { x1: clamp(bez.x1 + pluck.dx, 0, 1), y1: bez.y1 + pluck.dy, x2: clamp(bez.x2 - pluck.dx, 0, 1), y2: bez.y2 - pluck.dy };
+      if (!pluck && !ghost) return bez;
+      var c = pluck ? { x1: clamp(bez.x1 + pluck.dx, 0, 1), y1: bez.y1 + pluck.dy, x2: clamp(bez.x2 - pluck.dx, 0, 1), y2: bez.y2 - pluck.dy } : { x1: bez.x1, y1: bez.y1, x2: bez.x2, y2: bez.y2 };
+      if (ghost) {
+        c.x1 = clamp(c.x1 + ghost.o[0].dx, 0, 1); c.y1 = clamp(c.y1 + ghost.o[0].dy, YMIN, YMAX);
+        c.x2 = clamp(c.x2 + ghost.o[1].dx, 0, 1); c.y2 = clamp(c.y2 + ghost.o[1].dy, YMIN, YMAX);
+      }
+      return c;
+    }
+
+    /* o cursor-guia: enquanto ninguém mexeu na curva, um cursor chega na alça de cima, clica
+       (solta dois anéis), puxa a alça e a curva se deforma junto (COR e experiência mudam de cor),
+       solta, e a alça volta com mola; em seguida vai até a outra ponta e faz o mesmo, para mostrar
+       que as duas pegam. Só transform e opacidade no cursor; a curva usa o mesmo desenho de
+       sempre. Para de vez no primeiro toque de verdade. */
+    var handEl = $('.graph-hand', playFrame), tapEl = handEl && $('.graph-tap', handEl);
+    var presetsEl = $('.presets', playFrame), presetKnown = false;
+    var ghost = null, ghostKnown = false, ghostNext = 0, wrapW = 0, wrapH = 0;
+    // cada trecho: qual alça (1 é a de cima), quanto ela é puxada e quando o trecho começa (s).
+    // Dentro do trecho: chega até 0.7, aperta até 0.95, puxa até 2, segura até 2.25 e solta
+    var G_SEG = [{ h: 1, dx: 0.24, dy: -0.4, t: 0 }, { h: 0, dx: -0.24, dy: 0.4, t: 2.45 }];
+    var G_END = 2.45 + 3.4;
+    function ghostAt(gx, gy) {
+      // de unidades do gráfico (y para baixo) para pixels da área (viewBox -0.22 -0.32 1.44 1.64)
+      return { x: (gx + 0.22) / 1.44 * wrapW, y: (gy + 0.32) / 1.64 * wrapH };
+    }
+    function placeHand(gx, gy, sc, op) {
+      var p = ghostAt(gx, gy);
+      handEl.style.transform = 'translate3d(' + p.x.toFixed(1) + 'px,' + p.y.toFixed(1) + 'px,0) scale(' + sc.toFixed(3) + ')';
+      handEl.style.opacity = op.toFixed(3);
+    }
+    function stopGhost(forever) {
+      if (forever) ghostKnown = true;
+      if (!ghost && !forever) return;
+      ghost = null;
+      if (handEl) { handEl.style.opacity = '0'; handEl.classList.remove('is-static', 'is-down'); }
+      drawCurve();
+    }
+    // quanto da puxada vale no instante s: sobe com a mão, segura, e ao soltar volta com mola
+    function segPull(g, s) {
+      var u = s - g.t;
+      if (u < 0.95) return 0;
+      if (u < 2.25) return M.ease.inOut(clamp((u - 0.95) / 1.05, 0, 1));
+      var r = u - 2.25;
+      return r < 1.15 ? Math.exp(-r * 5.2) * Math.cos(r * 13) : 0;
+    }
+    // onde fica a alça do trecho com a puxada k, em unidades do gráfico (y para baixo)
+    function segPoint(g, k) {
+      var bx0 = g.h ? bez.x2 : bez.x1, by0 = g.h ? bez.y2 : bez.y1;
+      return { x: clamp(bx0 + g.dx * k, 0, 1), y: 1 - clamp(by0 + g.dy * k, YMIN, YMAX) };
+    }
+    function tapHand() { handEl.classList.add('is-down'); tapEl.classList.remove('is-on'); void tapEl.offsetWidth; tapEl.classList.add('is-on'); }
+    function stepGhost(now) {
+      if (ghostKnown || !handEl || hdrag !== null) return;
+      if (!ghost) {
+        if (now < ghostNext || pluck || bezTw || cur !== 'play') return;
+        ghost = { t0: now, o: [{ dx: 0, dy: 0 }, { dx: 0, dy: 0 }], tap: [false, false] };
+      }
+      var s = (now - ghost.t0) / 1000, ease = M.ease.inOut;
+      if (s >= G_END) {
+        ghost = null;
+        handEl.style.opacity = '0';
+        handEl.classList.remove('is-down');
+        ghostNext = now + 3800;
+        drawCurve();
+        return;
+      }
+      // as duas alças seguem a própria puxada (a primeira ainda balança enquanto o cursor viaja)
+      G_SEG.forEach(function (g) { var k = segPull(g, s); ghost.o[g.h].dx = g.dx * k; ghost.o[g.h].dy = g.dy * k; });
+      var j = s < G_SEG[1].t ? 0 : 1, g = G_SEG[j], u = s - g.t;
+      var H = segPoint(g, 0), p, sc = 1, op = 1;
+      if (u < 0.7) {
+        // chega: o primeiro por baixo, da direita; o segundo vem de onde soltou a primeira alça
+        var a = ease(u / 0.7), from;
+        if (j === 0) { from = { x: H.x + 0.3, y: H.y + 0.36 }; op = Math.min(1, u / 0.35); }
+        else { var e0 = segPoint(G_SEG[0], 1); from = { x: e0.x + 0.04, y: e0.y + 0.05 }; }
+        p = { x: lerp(from.x, H.x, a), y: lerp(from.y, H.y, a) };
+      } else if (u < 0.95) {
+        // aperta
+        p = H; sc = 1 - 0.14 * Math.sin(Math.min(1, (u - 0.7) / 0.18) * Math.PI / 2);
+        if (!ghost.tap[j]) { ghost.tap[j] = true; tapHand(); }
+      } else if (u < 2.25) {
+        // puxa, segura um instante
+        p = segPoint(g, segPull(g, s)); sc = 0.86;
+      } else {
+        // solta: o cursor sobe um pouco; no último trecho ele some
+        handEl.classList.remove('is-down');
+        var r = u - 2.25, lift = Math.min(1, r / 0.6), end = segPoint(g, 1);
+        p = { x: end.x + (j ? 0.08 : 0.04) * lift, y: end.y + (j ? 0.1 : 0.05) * lift };
+        sc = 0.86 + 0.14 * Math.min(1, r / 0.2);
+        if (j) op = 1 - lift;
+      }
+      placeHand(p.x, p.y, sc, op);
+      drawCurve();
     }
 
     function renderGraph() {
@@ -1508,18 +1616,33 @@
       var h = 0.418 * b.x1 + 0.512 * b.y1 + 1.146 * b.x2 + 0.3 * b.y2 - 0.89;
       return ((h % 1) + 1) % 1 * 360;
     }
+    // "experiência" no subtítulo pega a mesma cor e ainda se mexe com as alças: inclina
+    // quando elas se afastam da curva suave e estica quando passam do quadro (só transform)
+    var expEl = $('.exp', playFrame), expK = '';
     function tickCor(dt) {
       if (!corEl) return;
-      var want = corHue(shownBez());
-      if (cor.h < 0 || !motionOn()) cor.h = want;
+      var b = shownBez(), want = corHue(b), live = motionOn(), f = 1 - Math.exp(-dt / 260);
+      if (cor.h < 0 || !live) cor.h = want;
       else {
         var d = ((want - cor.h + 540) % 360) - 180;
-        cor.h = (cor.h + d * (1 - Math.exp(-dt / 260)) + 360) % 360;
+        cor.h = (cor.h + d * f + 360) % 360;
       }
       var key = Math.round(cor.h * 4);
-      if (key === cor.k) return;
-      cor.k = key;
-      corEl.style.color = 'hsl(' + cor.h.toFixed(1) + ', 88%, 62%)';
+      if (key !== cor.k) {
+        cor.k = key;
+        var col = 'hsl(' + cor.h.toFixed(1) + ', 88%, 62%)';
+        corEl.style.color = col;
+        if (expEl) expEl.style.color = col;
+      }
+      if (!expEl) return;
+      var skw = live ? clamp((b.x1 - b.x2 - 0.3) * -9, -10, 10) : 0;
+      var sy = live ? 1 + clamp((b.y1 + 1 - b.y2) * 0.22 + Math.max(0, b.y1 - 1, -b.y2) * 0.3, -0.12, 0.28) : 1;
+      cor.skw = cor.skw === undefined || !live ? skw : cor.skw + (skw - cor.skw) * f;
+      cor.sy = cor.sy === undefined || !live ? sy : cor.sy + (sy - cor.sy) * f;
+      var k2 = cor.skw.toFixed(2) + '|' + cor.sy.toFixed(3);
+      if (k2 === expK) return;
+      expK = k2;
+      expEl.style.transform = 'skewX(' + cor.skw.toFixed(2) + 'deg) scaleY(' + cor.sy.toFixed(3) + ')';
     }
 
     function tickTrack(T) {
@@ -1531,6 +1654,7 @@
         renderGraph();
       }
       if (pluck) { stepPluck(now); drawCurve(); }
+      if (motionOn()) stepGhost(now);
       var f = (T % CYCLE) / CYCLE;
       placeRider(f * CYCLE / MOVE);
       drawBg(T);
@@ -1540,6 +1664,9 @@
       var W = playFrame.clientWidth, H = playFrame.clientHeight;
       if (!W || !H) return;
       layoutBg(W, H);
+      if (handEl) { wrapW = handEl.parentNode.clientWidth; wrapH = handEl.parentNode.clientHeight; }
+      // sem animação, a mão fica parada apontando a alça de cima até alguém mexer
+      if (handEl && !ghostKnown && !motionOn()) { handEl.classList.add('is-static'); placeHand(bez.x2 + 0.05, 1 - bez.y2 + 0.06, 1, 1); }
       drawCurve();
     }
 
@@ -1556,18 +1683,20 @@
       if (i === 0) { bez.x1 = x; bez.y1 = y; } else { bez.x2 = x; bez.y2 = y; }
       renderGraph();
     }
-    // cada alça tem uma área de pegar do tamanho de um dedo: no toque só elas pegam,
-    // e o resto do gráfico deixa a página (ou o trilho) seguir com o gesto
+    // cada alça tem uma área de pegar do tamanho de um dedo; o resto do gráfico também pega
+    // (a alça mais perta vai até o dedo). No toque o gráfico inteiro segura o gesto: além do
+    // touch-action, os toques são cancelados aqui para navegadores que ignoram a regra
     var graphWrap = $('.graph-wrap');
     var grips = $$('.graph-grip', graphWrap);
     var hoff = { x: 0, y: 0 };
     graphWrap.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    ['touchstart', 'touchmove'].forEach(function (ev) { graphWrap.addEventListener(ev, function (e) { if (e.cancelable) e.preventDefault(); }, { passive: false }); });
     graphWrap.addEventListener('pointerdown', function (e) {
       var grip = e.target.closest('.graph-grip, .graph-handle');
-      if (!grip && e.pointerType === 'touch') return;
       if (e.pointerType === 'mouse' && e.button !== 0) return;
       var p = svgPoint(e);
       bezTw = null; pluck = null;
+      stopGhost(true);
       if (grip) {
         hdrag = parseInt(grip.getAttribute('data-h'), 10) - 1;
         hoff.x = (hdrag ? bez.x2 : bez.x1) - p.x; hoff.y = (hdrag ? bez.y2 : bez.y1) - (1 - p.y);
@@ -1602,6 +1731,7 @@
         else return;
         e.preventDefault();
         bezTw = null;
+        stopGhost(true);
         if (messNote) messNote.classList.add('is-done');
         setHandle(i, x, y);
       });
@@ -1610,6 +1740,9 @@
       b.addEventListener('click', function () {
         var p = PRESETS[b.getAttribute('data-preset')];
         pluck = null;
+        stopGhost(true);
+        presetKnown = true; presetsEl.classList.remove('is-inviting');
+        if (messNote) messNote.classList.add('is-done');
         var to = { x1: p[0], y1: p[1], x2: p[2], y2: p[3] };
         if (motionOn()) bezTw = { from: { x1: bez.x1, y1: bez.y1, x2: bez.x2, y2: bez.y2 }, to: to, t0: performance.now(), dur: 620 };
         else { bez.x1 = to.x1; bez.y1 = to.y1; bez.x2 = to.x2; bez.y2 = to.y2; renderGraph(); }
@@ -1761,8 +1894,9 @@
       cur = key;
       if (prev === 'works') setOpen(false);
       if (prev === 'design') mon.manual = false;
-      // na Interação a curva dá uma vibrada ao chegar e o bilhete se desenha: as alças pedem para ser puxadas
-      if (key === 'play') { startPluck(); drawNote(messNote); }
+      // na Interação o cursor-guia entra logo na chegada; depois que alguém mexeu, as alças só vibram
+      if (key === 'play') { presetsEl.classList.toggle('is-inviting', !presetKnown && motionOn()); drawNote(messNote); if (ghostKnown || !motionOn()) startPluck(); else ghostNext = performance.now(); }
+      if (prev === 'play') { stopGhost(false); presetsEl.classList.remove('is-inviting'); }
       // a pasta se monta a cada chegada, e o ponto recomeça do primeiro trabalho
       if (key === 'works') { wk.start = clock; enterFolders(); drawNote(openNote); }
       // no Design a corrente anda logo depois da chegada
@@ -1781,12 +1915,15 @@
 
     // título: o nome sozinho; rolando, ele sobe e encolhe e os papéis entram por baixo
     function scrubTitle(dt) {
-      var live = motionOn(), sT = live ? smooth01((SC.title.p - 0.08) / 0.5) : (SC.title.p > 0.3 ? 1 : 0);
+      var live = motionOn(), sT = live ? smooth01((SC.title.p - 0.02) / 0.1) : (SC.title.p > 0.3 ? 1 : 0);
       sCur = live ? sCur + (sT - sCur) * (1 - Math.exp(-dt / 80)) : sT;
       if (Math.abs(sT - sCur) < 0.0004) sCur = sT;
       if (Math.abs(sCur - sLast) > 0.0002 || (sCur !== sLast && (sCur === 0 || sCur === 1))) { sLast = sCur; title.style.setProperty('--s', sCur.toFixed(4)); }
       // a caixinha só se deixa pegar quando está à vista
       if ((sCur > 0.85) !== subOn) { subOn = !subOn; title.classList.toggle('has-sub', subOn); }
+      // a assinatura começa a se riscar no instante em que a primeira fase vira (pelo alvo, sem esperar a suavização)
+      if ((sT > 0.9) !== signOn) { signOn = !signOn; title.classList.toggle('is-signing', signOn); }
+      setInvite();
     }
 
     // Design: o quadro com a foto segue a rolagem, de 16:9 a 1:1, a 9:16 e de
@@ -1801,14 +1938,21 @@
       }
       return ASPECT[ASPECT.length - 1][1];
     }
+    // enquanto a rolagem deforma o quadro, a proporção acende (e um pontinho desce ao lado dela);
+    // vale só o movimento da própria página (o p das cenas é suavizado), então apaga logo que ela para
+    var ratioHot = false, ratioAt = 0, ratioP = -1;
     function scrubDesign(dt) {
-      var D = SC.design;
+      var D = SC.design, tnow = performance.now();
+      if (ratioHot && tnow - ratioAt > 140) { ratioHot = false; monitor.classList.remove('is-scrolled'); }
       if (!D.vis || !motionOn() || mdrag || mon.manual || mon.tw) return;
       var f = 1 - Math.exp(-dt / 110), a = aspectAt(D.p);
       var na = Math.exp(lerp(Math.log(mon.a), Math.log(a), f)), nk = mon.k + (1 - mon.k) * f;
       if (Math.abs(a - na) < 0.0008) na = a;
       if (Math.abs(1 - nk) < 0.001) nk = 1;
       if (na === mon.a && nk === mon.k) return;
+      var sy = global.pageYOffset;
+      if (sy !== ratioP && Math.abs(a - mon.a) > 0.002) { ratioAt = tnow; if (!ratioHot) { ratioHot = true; monitor.classList.add('is-scrolled'); } }
+      ratioP = sy;
       kickBlob(clamp((na - mon.a) * 0.6, -0.08, 0.08));
       mon.a = na; mon.k = nk;
       layoutMonitor();
@@ -1859,7 +2003,7 @@
     Site.on('lang', relabel);
     Site.on('motion', function (on) {
       lightDirty = true; wk.sel = -2; cor.k = -1;
-      if (!on) { caosOrder(true); chain.roll = -1; drawWords(clock); designStatic(); creditsStatic(); staticOnion(); pluck = null; bezTw = null; drawCurve(); resetBox(); setRole(0, clock); cells.forEach(function (c) { c.ch = c.want; c.el.textContent = c.ch === ' ' ? ' ' : c.ch; }); }
+      if (!on) { caosOrder(true); chain.roll = -1; drawWords(clock); designStatic(); creditsStatic(); staticOnion(); pluck = null; bezTw = null; ghost = null; if (handEl) handEl.style.opacity = '0'; drawCurve(); resetBox(); setRole(0, clock); cells.forEach(function (c) { c.ch = c.want; c.el.textContent = c.ch === ' ' ? ' ' : c.ch; }); }
       else { roleAt = clock; }
     });
 

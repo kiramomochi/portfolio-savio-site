@@ -123,6 +123,56 @@
   }
   function goWork(k) { scrollToY(reelY(k)); }
 
+  /* no toque os vídeos também se arrastam de lado: o gesto horizontal vira a mesma rolagem
+     que passa o rolo (a cena continua presa e a fita segue o dedo) e, ao soltar, ela assenta
+     no vídeo mais perto, ou no seguinte se o gesto foi um peteleco. O gesto vertical continua
+     sendo a rolagem da página, e com mouse nada muda. */
+  (function reelSwipe() {
+    var st = byKey.reels && byKey.reels.stage;
+    if (!st || nW < 2) return;
+    var g = null, swallow = false;
+    // quantos pixels de rolagem passam um vídeo
+    function perReel() { return REEL_RUN * own(byKey.reels) / (nW - 1); }
+    st.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'touch') return;
+      g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, sy: window.pageYOffset, on: false, pts: [], f0: 0 };
+    });
+    st.addEventListener('pointermove', function (e) {
+      if (!g || e.pointerId !== g.id) return;
+      var dx = e.clientX - g.x0, dy = e.clientY - g.y0;
+      if (!g.on) {
+        // só vira arrasto de lado quando o dedo anda mais na horizontal que na vertical
+        if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return;
+        g.on = true; g.x0 = e.clientX; dx = 0;
+        g.sy = clamp(window.pageYOffset, reelY(0), reelY(nW - 1)); g.f0 = (g.sy - reelY(0)) / perReel();
+        try { st.setPointerCapture(e.pointerId); } catch (err) { /* ok */ }
+      }
+      scrollToY(clamp(g.sy - dx / Math.max(1, step) * perReel(), reelY(0), reelY(nW - 1)), true);
+      var now = performance.now();
+      g.pts.push({ x: e.clientX, t: now });
+      while (g.pts.length > 2 && now - g.pts[0].t > 90) g.pts.shift();
+    });
+    function endSwipe(e) {
+      if (!g || e.pointerId !== g.id) return;
+      var d = g; g = null;
+      if (!d.on) return;
+      swallow = true;
+      setTimeout(function () { swallow = false; }, 60);
+      var a = d.pts[0], b = d.pts[d.pts.length - 1];
+      var vx = a && b && b.t > a.t && performance.now() - b.t < 80 ? (b.x - a.x) / (b.t - a.t) : 0;
+      // passou de um quarto de vídeo (ou foi um peteleco), assenta no seguinte na direção do gesto
+      var f = (window.pageYOffset - reelY(0)) / perReel(), dl = f - d.f0, k = Math.round(f);
+      if (dl > 0) k = Math.floor(f + 0.75); else if (dl < 0) k = Math.ceil(f - 0.75);
+      if (vx < -0.3) k = Math.max(k, Math.round(d.f0) + 1); else if (vx > 0.3) k = Math.min(k, Math.round(d.f0) - 1);
+      k = clamp(k, 0, nW - 1);
+      goWork(k);
+    }
+    st.addEventListener('pointerup', endSwipe);
+    st.addEventListener('pointercancel', endSwipe);
+    // o toque que terminou um arrasto não vale como clique
+    st.addEventListener('click', function (e) { if (swallow) { e.preventDefault(); e.stopPropagation(); } }, true);
+  })();
+
   var CH = [
     // os três primeiros aparecem só pelo número (o nome fica para o leitor de tela)
     { num: '1', key: 'ch.intro', scene: 'title', hash: 'apresentacao', bare: true },

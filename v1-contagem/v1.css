@@ -55,6 +55,7 @@ body {
   color: var(--ink);
   overflow: hidden;
   container-type: size;
+  container-name: frame;
 }
 @keyframes expose { 0% { filter: brightness(1.14); } 14% { filter: brightness(0.95); } 30% { filter: brightness(1.06); } 100% { filter: none; } }
 @keyframes frame-cue { 0% { opacity: 1; } 22% { opacity: 0; } 44% { opacity: 1; } 66%, 100% { opacity: 0; } }
@@ -153,10 +154,31 @@ body {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 24px -12px rgba(0, 0, 0, 0.7);
   outline: 1px solid transparent; outline-offset: 0;
   cursor: grab; touch-action: none; pointer-events: none;
+  /* camada própria: ela se move quase o tempo todo e as sombras não são repintadas a cada quadro */
+  will-change: transform;
   /* é um objeto, não um texto: nada de seleção nem do menu de toque longo */
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
   transition: box-shadow 260ms var(--ease-out);
 }
+/* o convite: uma camada de tungstênio por cima do papel acende e apaga em ciclo enquanto
+   ninguém mexeu nela; só a opacidade anima, então o navegador não repinta nada.
+   Com o mouse em cima ela já fica meio acesa. */
+.title-text { position: relative; z-index: 1; }
+.title-tint {
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: var(--tungsten);
+  box-shadow: 0 0 0 1px rgba(255, 200, 140, 0.9), 0 0 30px rgba(255, 166, 77, 0.5);
+  opacity: 0; transition: opacity 240ms var(--ease-out);
+}
+.is-inviting .title-tint { animation: box-tint 2800ms ease-in-out infinite; }
+@keyframes box-tint { 0%, 34% { opacity: 0; } 52%, 64% { opacity: 1; } 86%, 100% { opacity: 0; } }
+@media (hover: hover) { .title-box:hover .title-tint { animation: none; opacity: 0.7; } }
+.is-pulling .title-tint { animation: none; opacity: 1; }
+/* no mergulho as setas piscam embaixo dela */
+.is-hint .title-drop { opacity: 0.9; }
+.is-hint .title-drop path { animation: drop-run 900ms var(--ease-out) 1; }
+.is-hint .title-drop path:nth-child(2) { animation-delay: 120ms; }
+.is-hint .title-drop path:nth-child(3) { animation-delay: 240ms; }
 /* depois de arremessada, volta ao lugar com um pulo */
 .title-box.is-back { animation: box-back 560ms var(--ease-out) 1; }
 @keyframes box-back { 0% { opacity: 0; scale: 0.6; } 60% { opacity: 1; scale: 1.06; } 100% { scale: 1; } }
@@ -224,8 +246,8 @@ body {
   transform: translate(-2%, -42%) rotate(-8deg); opacity: 0; transition: opacity 300ms var(--ease-out);
 }
 .sign path { fill: none; stroke: var(--tungsten); stroke-width: 20; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 300ms ease-in; }
-.has-sub .sign svg { opacity: 1; }
-.has-sub .sign path { stroke-dashoffset: 0; transition: stroke-dashoffset 1500ms cubic-bezier(0.65, 0, 0.35, 1) 150ms; }
+.is-signing .sign svg { opacity: 1; transition-duration: 120ms; }
+.is-signing .sign path { stroke-dashoffset: 0; transition: stroke-dashoffset 1500ms cubic-bezier(0.45, 0, 0.25, 1); }
 /* no retrato as duas linhas ocupam a largura toda: ela assina acima de SAVIO, no canto direito,
    sem tocar nas letras */
 @container (max-aspect-ratio: 1/1) {
@@ -288,16 +310,16 @@ body {
 .kgrid, .lattice { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; pointer-events: none; }
 .monitor-area { z-index: 1; }
 .formats { display: flex; gap: 18px; margin-top: 2.2em; }
-.formats button, .presets button {
+.formats button {
   position: relative; padding: 12px 0 8px; font-size: 13.5px; color: var(--ink-2);
 }
-.formats button::before, .presets button::before {
+.formats button::before {
   content: ''; position: absolute; left: 0; top: 0; height: 0; width: 8px;
   border-top: 1px solid currentColor;
 }
-.formats button:hover, .presets button:hover { color: var(--ink); }
-.formats button.is-on, .presets button.is-on { color: var(--ink); }
-.formats button.is-on::before, .presets button.is-on::before { width: 100%; border-top-width: 2px; }
+.formats button:hover { color: var(--ink); }
+.formats button.is-on { color: var(--ink); }
+.formats button.is-on::before { width: 100%; border-top-width: 2px; }
 
 /* "Design é o que dá forma ao… caos": a palavra é um quadrado de letras do tamanho do título */
 .design-claim { font-size: clamp(20px, min(2.2cqw, 4.4cqh), 32px); line-height: 1.25; margin-top: 0.45em; }
@@ -335,7 +357,6 @@ body {
 }
 .caos-l.is-painted::after { clip-path: inset(0 0 0 0); transition-duration: 560ms; }
 .caos.is-instant .caos-l, .caos.is-instant .caos-l::after { transition: none; }
-.design-caption { margin-top: 1.3em; font-size: 15px; line-height: 1.45; max-width: 42ch; color: var(--ink-2); text-wrap: balance; }
 
 .monitor-area { position: relative; min-height: 0; display: grid; place-items: center; }
 /* o quadro é uma placa de vidro: deixa a malha passar borrada, tem um véu mais claro
@@ -345,10 +366,10 @@ body {
   position: relative; width: 320px; height: 180px;
   border-radius: 10px;
   background:
-    linear-gradient(112deg, transparent 22%, rgba(255, 255, 255, 0.045) 30%, transparent 44%),
-    linear-gradient(160deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 42%, rgba(255, 255, 255, 0.015) 70%, rgba(255, 255, 255, 0.05) 100%);
-  -webkit-backdrop-filter: blur(7px) saturate(170%) brightness(1.15);
-  backdrop-filter: blur(7px) saturate(170%) brightness(1.15);
+    linear-gradient(112deg, transparent 22%, rgba(255, 255, 255, 0.03) 30%, transparent 44%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.015) 42%, rgba(255, 255, 255, 0.005) 70%, rgba(255, 255, 255, 0.03) 100%);
+  -webkit-backdrop-filter: blur(3.5px) saturate(150%) brightness(1.06);
+  backdrop-filter: blur(3.5px) saturate(150%) brightness(1.06);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.16),
     inset 0 -1px 0 rgba(0, 0, 0, 0.35),
@@ -399,7 +420,40 @@ body {
   font-size: clamp(10px, 4.3cqmin, 19px); font-weight: 560; line-height: 1.18; color: var(--ink);
   letter-spacing: -0.005em; text-wrap: balance;
 }
-.m-ratio { left: 3.2%; top: 3.2%; font-size: 11px; color: var(--ink); letter-spacing: 0.02em; }
+.m-ratio {
+  left: 3.2%; top: 3.2%; z-index: 2;
+  font-size: 13px; color: var(--ink); letter-spacing: 0.02em; font-variant-numeric: tabular-nums;
+  transition: color 120ms var(--ease-out), text-shadow 120ms var(--ease-out);
+}
+/* só enquanto a rolagem deforma o quadro: a proporção fica branca e mais pesada (com uma sombra
+   para ler até sobre o círculo laranja) e, do lado esquerdo do quadro, entra um mouse pequeno
+   com a roda descendo e um fio que escorre embaixo. Some assim que a rolagem para. */
+.monitor > .m-scroll {
+  left: -34px; top: 50%; z-index: 2; width: 16px; height: 25px; margin-top: -22px;
+  border: 1.25px solid rgba(255, 255, 255, 0.78); border-radius: 8px;
+  opacity: 0; transform: translateX(6px);
+  transition: opacity 160ms var(--ease-out), transform 300ms var(--ease-out);
+}
+.m-scroll::after {
+  content: ''; position: absolute; left: 50%; top: 4px; width: 2px; height: 5px; margin-left: -1px; border-radius: 1px;
+  background: #fff;
+}
+.m-scroll::before {
+  content: ''; position: absolute; left: 50%; top: calc(100% + 5px); width: 1px; height: 14px; margin-left: -0.5px;
+  background: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
+  transform-origin: 50% 0; transform: scaleY(0);
+}
+.monitor.is-scrolled .m-ratio { color: #fff; font-weight: 720; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55); }
+.monitor.is-scrolled .m-scroll { opacity: 1; transform: none; }
+/* no retrato o quadro ocupa a largura toda: o mouse fica logo acima do canto esquerdo, com o fio
+   descendo até ele (a pergunta é ao painel, porque o próprio quadro também é um contêiner) */
+@container frame (max-aspect-ratio: 1/1) {
+  .monitor > .m-scroll { left: 2px; top: auto; bottom: calc(100% + 26px); width: 13px; height: 20px; margin-top: 0; transform: translateY(-6px); }
+}
+.monitor.is-scrolled .m-scroll::after { animation: m-wheel 1000ms var(--ease-io) infinite; }
+.monitor.is-scrolled .m-scroll::before { animation: m-trail 1000ms var(--ease-io) infinite; }
+@keyframes m-wheel { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 75% { opacity: 1; } 100% { transform: translateY(7px); opacity: 0; } }
+@keyframes m-trail { 0% { transform: scaleY(0); opacity: 1; } 60% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1); opacity: 0; } }
 /* o canto que se arrasta: área de toque de 44px, desenho de um canto de recorte */
 .monitor > .m-handle {
   right: -22px; bottom: -22px; width: 44px; height: 44px;
@@ -611,14 +665,57 @@ body {
 .graph-wrap {
   grid-column: 2; grid-row: 1; align-self: center;
   height: min(76cqh, 52cqw); aspect-ratio: 144 / 164;
-  touch-action: pan-y; cursor: default;
+  /* o gráfico inteiro segura o toque: mexer na curva nunca rola a página */
+  touch-action: none; cursor: default;
 }
-/* a área de pegar de cada alça, do tamanho de um dedo; no toque só ela segura o gesto */
+/* a área de pegar de cada alça, do tamanho de um dedo */
 .graph-grip {
   position: absolute; z-index: 2; width: 44px; height: 44px; margin: -22px 0 0 -22px;
   border-radius: 50%; touch-action: none; cursor: grab;
 }
 .graph-grip:active { cursor: grabbing; }
+/* o cursor-guia: a ponta fica na origem do elemento, que o script leva até a alça.
+   Com mouse, uma seta de traço fino que deixa um ponto de tungstênio ao apertar; no toque,
+   o marcador de dedo das gravações de tela (um disco translúcido com aro). */
+.graph-hand {
+  position: absolute; left: 0; top: 0; z-index: 3; width: 0; height: 0;
+  opacity: 0; pointer-events: none; will-change: transform, opacity;
+}
+.hand-arrow {
+  position: absolute; left: -4px; top: -3.5px; width: 34px; height: 34px; max-width: none; overflow: visible;
+  fill: #f6f5f1; stroke: #0b0b0a; stroke-width: 1.1; stroke-linejoin: round; paint-order: stroke;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+  transition: transform 160ms var(--ease-out);
+}
+.graph-hand.is-down .hand-arrow { transform: translate(1px, 1px) scale(0.92); }
+.hand-dot {
+  display: none; position: absolute; left: -17px; top: -17px; width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(246, 245, 241, 0.22); border: 1.5px solid rgba(246, 245, 241, 0.9);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+}
+.graph-hand.is-down .hand-dot { background: rgba(255, 166, 77, 0.38); border-color: var(--tungsten); }
+@media (hover: none) {
+  .hand-arrow { display: none; }
+  .hand-dot { display: block; }
+}
+/* apertado: um ponto de tungstênio fica sob a ponta enquanto a alça é puxada */
+.graph-press {
+  position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--tungsten); box-shadow: 0 0 12px rgba(255, 166, 77, 0.8);
+  opacity: 0; transform: scale(0.4); transition: opacity 160ms var(--ease-out), transform 220ms var(--ease-out);
+}
+.graph-hand.is-down .graph-press { opacity: 1; transform: none; }
+/* o clique: dois anéis finos saem da ponta, um logo depois do outro */
+.graph-tap, .graph-tap::after {
+  position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border-radius: 50%;
+  border: 1.5px solid var(--tungsten); opacity: 0; transform: scale(0.3);
+}
+.graph-tap::after { content: ''; left: -1.5px; top: -1.5px; }
+.graph-tap.is-on { animation: hand-tap 760ms var(--ease-out) 1; }
+.graph-tap.is-on::after { animation: hand-tap 760ms var(--ease-out) 140ms 1; }
+@keyframes hand-tap { 0% { opacity: 0.95; transform: scale(0.3); } 100% { opacity: 0; transform: scale(1.5); } }
+.graph-hand.is-static { opacity: 1; }
 .graph { width: 100%; height: 100%; overflow: visible; }
 .graph-box { fill: rgba(7, 7, 7, 0.62); stroke: rgba(255, 255, 255, 0.3); stroke-width: 0.004; }
 .graph-grid line { stroke: rgba(255, 255, 255, 0.1); stroke-width: 0.003; }
@@ -634,13 +731,43 @@ body {
 .graph-handle:focus-visible .graph-knob { stroke: var(--tungsten); stroke-width: 0.014; }
 
 .play-tools { grid-column: 3; grid-row: 1; align-self: start; justify-self: start; display: flex; flex-direction: column; gap: 1.6em; margin-top: 1.2em; }
-.presets { display: flex; flex-wrap: wrap; gap: 4px 18px; }
-.frame--play .presets button { color: var(--room-dim); }
-.frame--play .presets button:hover, .frame--play .presets button.is-on { color: #fff; }
+/* as curvas prontas: quadrados pequenos, cada um com o desenho da própria curva (o nome fica no
+   rótulo de acessibilidade e na dica do mouse). A escolhida ganha só um fundo laranja leve.
+   Enquanto ninguém usou, um aro fino passa por eles em sequência (só opacidade). */
+.presets { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.presets-label {
+  flex: 0 0 100%; margin-bottom: 3px;
+  font-size: 11px; font-weight: 640; letter-spacing: 0.1em; text-transform: uppercase; color: var(--room-dim);
+}
+.frame--play .presets button {
+  position: relative; display: grid; place-items: center; width: 38px; height: 38px; padding: 0; border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.03);
+  color: #e9e8e4; cursor: pointer;
+  transition: background-color 200ms var(--ease-out), border-color 200ms var(--ease-out);
+}
+.preset-curve { width: 22px; height: 22px; max-width: none; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+@media (hover: hover) {
+  .frame--play .presets button:hover { border-color: rgba(255, 255, 255, 0.45); }
+}
+.frame--play .presets button:active { transform: scale(0.95); }
+.frame--play .presets button.is-on { background: rgba(255, 166, 77, 0.16); border-color: rgba(255, 166, 77, 0.4); }
+.frame--play .presets button:focus-visible { outline: 2px solid var(--tungsten); outline-offset: 3px; }
+.frame--play .presets button::after {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none;
+  border: 1px solid rgba(255, 166, 77, 0.75); opacity: 0;
+}
+.presets.is-inviting button::after { animation: preset-call 4000ms ease-in-out 900ms infinite; }
+.presets.is-inviting button:nth-of-type(2)::after { animation-delay: 1050ms; }
+.presets.is-inviting button:nth-of-type(3)::after { animation-delay: 1200ms; }
+.presets.is-inviting button:nth-of-type(4)::after { animation-delay: 1350ms; }
+@keyframes preset-call { 0%, 6% { opacity: 0; } 14% { opacity: 1; } 30%, 100% { opacity: 0; } }
 /* a bolinha: halo que cresce com a pressa, cópias do caminho atrás e as linhas até os eixos */
 .graph-halo { fill: none; stroke: var(--tungsten); stroke-width: 0.006; opacity: 0; pointer-events: none; }
 .rider-ghost { fill: none; stroke: var(--tungsten); stroke-width: 0.005; opacity: 0; pointer-events: none; }
 .graph-guide { stroke: rgba(255, 166, 77, 0.5); stroke-width: 0.004; stroke-dasharray: 0.012 0.014; pointer-events: none; }
+/* "experiência": em destaque no subtítulo, com a cor e o corpo comandados pela curva */
+.exp { display: inline-block; font-weight: 720; color: var(--tungsten); transform-origin: 50% 85%; will-change: transform; }
+
 /* COR: a palavra pinta com a cor que a curva dá (o script escreve a cor) */
 .cor {
   font-weight: 820; font-stretch: max(var(--wdth), 108%); text-transform: uppercase;
@@ -671,8 +798,8 @@ body {
 @keyframes note-word { from { opacity: 0; transform: rotate(-6deg) translateY(6px); } to { opacity: 1; transform: rotate(-6deg); } }
 .note.is-done { opacity: 0.35; }
 .note-arrow--d { display: none; }
-/* bagunce: à esquerda do gráfico, a seta entra na curva por baixo */
-.note--mess { right: 87%; top: 66%; margin-bottom: 0; }
+/* bagunce: à esquerda da alça de cima (onde o cursor-guia clica), a seta aponta para ela */
+.note--mess { right: 63%; bottom: 81%; margin-bottom: 0; }
 .note--mess .note-arrow { margin-bottom: -14px; }
 /* abrir: o script põe ao lado da pasta; clicar nele também abre */
 button.note { all: unset; position: absolute; z-index: 3; display: flex; align-items: flex-end; gap: 2px; color: var(--tungsten); white-space: nowrap; cursor: pointer; pointer-events: auto; transition: opacity 600ms var(--ease-out); }
@@ -853,7 +980,6 @@ button.note { all: unset; position: absolute; z-index: 3; display: flex; align-i
   .chapter-title, .frame--design .chapter-title { font-size: clamp(40px, 13cqw, 96px); }
   .chapter-line { font-size: 18px; }
   .design-claim { font-size: 20px; }
-  .frame--design .design-caption { display: block; font-size: 14px; margin-top: 0.9em; }
   .chapter-caption { display: none; }
 
   .works-copy { left: 6cqw; right: 6cqw; top: calc(var(--mt) + 2.5cqh); max-width: none; }
@@ -865,9 +991,11 @@ button.note { all: unset; position: absolute; z-index: 3; display: flex; align-i
   .graph-wrap { grid-column: 1; grid-row: 3; justify-self: center; height: min(44cqh, 100cqw); }
   .play-tools { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 1em; }
   .cor { font-size: clamp(40px, 13cqw, 72px); }
-  .note--mess { right: auto; left: 2%; top: auto; bottom: 84%; flex-direction: column; align-items: flex-start; }
+  .frame--play .presets button { width: 36px; height: 36px; }
+  .preset-curve { width: 20px; height: 20px; }
+  .note--mess { right: 61%; bottom: 82%; flex-direction: column; align-items: flex-end; }
   .note--mess .note-arrow--r { display: none; }
-  .note--mess .note-arrow--d { display: block; margin: 2px 0 0 18px; }
+  .note--mess .note-arrow--d { display: block; margin: 2px 0 -8px 0; }
 
   .work-ph-label span { display: block; }
   .lead { max-width: 26ch; }
@@ -888,7 +1016,7 @@ button.note { all: unset; position: absolute; z-index: 3; display: flex; align-i
 .motion-off .cell.is-flip, .motion-off .cue.is-blink { animation: none; }
 .motion-off .monitor, .motion-off .monitor > span, .motion-off .caos-l, .motion-off .caos-l::after { transition: none; }
 .motion-off .is-titled .name-line .ch { transition: none; }
-.motion-off .title-box.is-cue::after, .motion-off .title-box.is-call, .motion-off .title-box.is-back { animation: none; }
+.motion-off .title-box.is-cue::after, .motion-off .title-box.is-call, .motion-off .title-box.is-back, .motion-off .title-tint , .motion-off .presets button::after { animation: none; }
 .motion-off .title-drop path, .motion-off .title-zone svg { animation: none !important; }
 .motion-off .sign path { stroke-dashoffset: 0; transition: none; }
 .motion-off .title-light { transition: none; }
@@ -939,7 +1067,8 @@ html { scrollbar-width: thin; scrollbar-color: #3a3a37 var(--room); }
 
 /* ---------- O rolo de vídeos ---------- */
 
-.scene--reels .stage { background: #070707; }
+/* no toque o gesto de lado é dos vídeos (o script arrasta a fita); o vertical rola a página */
+.scene--reels .stage { background: #070707; touch-action: pan-y; }
 .strip {
   --gap: 4cqw;
   --iw: min(76cqw, (100cqh - var(--mt) - var(--mb) - 34px - 7cqh) * 1.7778);
