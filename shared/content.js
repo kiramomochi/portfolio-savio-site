@@ -39,10 +39,9 @@ window.SITE = {
   // file: vídeo principal. fileMobile (opcional): versão 720p para telas pequenas.
   // poster (opcional): imagem mostrada enquanto o vídeo carrega.
   works: [
-    { file: 'videos/trabalho-01.mp4', fileMobile: 'videos/trabalho-01-720.mp4', poster: 'videos/trabalho-01.jpg', title: { pt: 'Alê · identidade visual', en: 'Alê · visual identity' } },
-    { file: 'videos/trabalho-02.mp4', fileMobile: 'videos/trabalho-02-720.mp4', poster: 'videos/trabalho-02.jpg', title: { pt: 'Anúncios', en: 'Ads' } },
-    { file: 'videos/trabalho-03.mp4', fileMobile: '', poster: '', title: { pt: 'Projeto 03', en: 'Project 03' } },
-    { file: 'videos/trabalho-04.mp4', fileMobile: '', poster: '', title: { pt: 'Projeto 04', en: 'Project 04' } }
+    { file: 'videos/trabalho-01.mp4', fileMobile: 'videos/trabalho-01-720.mp4', poster: 'videos/trabalho-01.jpg', title: { pt: 'Deviate · identidade visual', en: 'Deviate · visual identity' } },
+    { file: 'videos/trabalho-02.mp4', fileMobile: 'videos/trabalho-02-720.mp4', poster: 'videos/trabalho-02.jpg', title: { pt: 'Alê · identidade visual', en: 'Alê · visual identity' } },
+    { file: 'videos/trabalho-03.mp4', fileMobile: 'videos/trabalho-03-720.mp4', poster: 'videos/trabalho-03.jpg', title: { pt: 'Anúncios', en: 'Ads' } }
   ],
 
   // Textos comuns às três versões.

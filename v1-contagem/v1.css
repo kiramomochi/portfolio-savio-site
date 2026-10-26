@@ -55,7 +55,6 @@ body {
   color: var(--ink);
   overflow: hidden;
   container-type: size;
-  container-name: frame;
 }
 @keyframes expose { 0% { filter: brightness(1.14); } 14% { filter: brightness(0.95); } 30% { filter: brightness(1.06); } 100% { filter: none; } }
 @keyframes frame-cue { 0% { opacity: 1; } 22% { opacity: 0; } 44% { opacity: 1; } 66%, 100% { opacity: 0; } }
@@ -115,13 +114,14 @@ body {
 .roles-static { display: none; font-size: 0.5em; letter-spacing: 0.02em; }
 .motion-off .cells { display: none; }
 .motion-off .roles-static { display: inline; }
-.is-titled .name-line .ch { clip-path: inset(-10% 0 -10% 0); transition: clip-path 900ms var(--ease-out); }
+.is-titled .name-line .ch { clip-path: inset(-10% 0 -10% 0); transition: clip-path 760ms var(--ease-out); }
 
 .title-sub {
   z-index: 1;
   position: absolute; left: 6cqw; right: 6cqw; top: var(--sub-top, 58%);
   text-align: center;
-  opacity: var(--s);
+  /* entram só na segunda metade da subida, quando o nome já saiu da frente */
+  opacity: clamp(0, (var(--s) - 0.45) / 0.55, 1);
   transform: translateY(calc((1 - var(--s)) * 4cqh));
 }
 .roles {
@@ -254,28 +254,6 @@ body {
   .sign svg { left: auto; right: 0; top: auto; bottom: calc(100% + 0.6cqh); height: 34%; transform: rotate(-8deg); }
 }
 
-/* ---------- Introdução: o projetor acende ---------- */
-.intro {
-  position: fixed; inset: 0; z-index: 60; display: none; pointer-events: none;
-  background: #050505; color: var(--room-text);
-  -webkit-mask-image: conic-gradient(from 0deg, transparent 0deg, transparent var(--a, 0deg), #000 var(--a, 0deg));
-  mask-image: conic-gradient(from 0deg, transparent 0deg, transparent var(--a, 0deg), #000 var(--a, 0deg));
-  transition: opacity 400ms var(--ease-out);
-}
-.intro.is-on { display: block; }
-.intro.is-out { opacity: 0; }
-.intro-leader { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; overflow: visible; }
-.intro-cross { stroke: rgba(237, 237, 234, 0.14); stroke-width: 0.35; }
-.intro-ring { fill: none; stroke: rgba(237, 237, 234, 0.6); stroke-width: 0.6; stroke-dasharray: 1; stroke-dashoffset: 1; transform: rotate(-90deg); animation: note-draw 700ms var(--ease-out) forwards; }
-.intro-ring--in { stroke: rgba(237, 237, 234, 0.25); animation-delay: 120ms; }
-.intro-hand { stroke: var(--tungsten); stroke-width: 0.9; stroke-linecap: round; }
-.intro-cue { fill: var(--tungsten); opacity: 0; animation: frame-cue 700ms steps(1) 200ms 1; }
-.intro-tc {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  font-weight: 700; font-stretch: 78%; font-size: clamp(22px, 3vmin, 34px); letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums; color: #f1f0ec;
-  padding: 6px 12px; background: #050505;
-}
 @keyframes box-call {
   0% { outline-color: rgba(237, 237, 234, 0.7); outline-offset: 0; }
   100% { outline-color: rgba(237, 237, 234, 0); outline-offset: 18px; }
@@ -420,40 +398,7 @@ body {
   font-size: clamp(10px, 4.3cqmin, 19px); font-weight: 560; line-height: 1.18; color: var(--ink);
   letter-spacing: -0.005em; text-wrap: balance;
 }
-.m-ratio {
-  left: 3.2%; top: 3.2%; z-index: 2;
-  font-size: 13px; color: var(--ink); letter-spacing: 0.02em; font-variant-numeric: tabular-nums;
-  transition: color 120ms var(--ease-out), text-shadow 120ms var(--ease-out);
-}
-/* só enquanto a rolagem deforma o quadro: a proporção fica branca e mais pesada (com uma sombra
-   para ler até sobre o círculo laranja) e, do lado esquerdo do quadro, entra um mouse pequeno
-   com a roda descendo e um fio que escorre embaixo. Some assim que a rolagem para. */
-.monitor > .m-scroll {
-  left: -34px; top: 50%; z-index: 2; width: 16px; height: 25px; margin-top: -22px;
-  border: 1.25px solid rgba(255, 255, 255, 0.78); border-radius: 8px;
-  opacity: 0; transform: translateX(6px);
-  transition: opacity 160ms var(--ease-out), transform 300ms var(--ease-out);
-}
-.m-scroll::after {
-  content: ''; position: absolute; left: 50%; top: 4px; width: 2px; height: 5px; margin-left: -1px; border-radius: 1px;
-  background: #fff;
-}
-.m-scroll::before {
-  content: ''; position: absolute; left: 50%; top: calc(100% + 5px); width: 1px; height: 14px; margin-left: -0.5px;
-  background: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
-  transform-origin: 50% 0; transform: scaleY(0);
-}
-.monitor.is-scrolled .m-ratio { color: #fff; font-weight: 720; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55); }
-.monitor.is-scrolled .m-scroll { opacity: 1; transform: none; }
-/* no retrato o quadro ocupa a largura toda: o mouse fica logo acima do canto esquerdo, com o fio
-   descendo até ele (a pergunta é ao painel, porque o próprio quadro também é um contêiner) */
-@container frame (max-aspect-ratio: 1/1) {
-  .monitor > .m-scroll { left: 2px; top: auto; bottom: calc(100% + 26px); width: 13px; height: 20px; margin-top: 0; transform: translateY(-6px); }
-}
-.monitor.is-scrolled .m-scroll::after { animation: m-wheel 1000ms var(--ease-io) infinite; }
-.monitor.is-scrolled .m-scroll::before { animation: m-trail 1000ms var(--ease-io) infinite; }
-@keyframes m-wheel { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 75% { opacity: 1; } 100% { transform: translateY(7px); opacity: 0; } }
-@keyframes m-trail { 0% { transform: scaleY(0); opacity: 1; } 60% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1); opacity: 0; } }
+.m-ratio { left: 3.2%; top: 3.2%; z-index: 2; font-size: 13px; color: var(--ink); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
 /* o canto que se arrasta: área de toque de 44px, desenho de um canto de recorte */
 .monitor > .m-handle {
   right: -22px; bottom: -22px; width: 44px; height: 44px;
@@ -486,12 +431,23 @@ body {
 .onion-run { fill: none; stroke: var(--ink); stroke-width: 1.6; opacity: 0.45; stroke-dasharray: 1000; }
 .onion-ghosts circle { fill: none; stroke: var(--ink); stroke-width: 1; }
 .onion-dot { fill: var(--ink); transition: opacity 300ms var(--ease-out); }
+/* o ponto jogado pelo clique é de tungstênio, para se distinguir do que anda sozinho */
+.onion-toss { fill: var(--tungsten); }
+/* a cada queda um anel se abre na boca do bolso */
+.onion-splash { fill: none; stroke: var(--tungsten); stroke-width: 1.5; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.onion-splash.is-on { animation: onion-splash 900ms var(--ease-out) 1; }
+@keyframes onion-splash { 0% { opacity: 0.9; transform: scale(0.2); } 100% { opacity: 0; transform: scale(2.4); } }
 .frame--works.is-open .onion-dot, .frame--works.is-open .onion-ghosts { opacity: 0 !important; }
 .works-copy { position: absolute; left: 5cqw; top: calc(var(--mt) + 3.5cqh); z-index: 2; max-width: 44cqw; pointer-events: none; }
 .frame--works .chapter-title { font-size: clamp(34px, min(5.4cqw, 11cqh), 84px); }
 .works-readout { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 1.1em; font-size: 13.5px; color: var(--ink-2); }
 .readout-count { font-variant-numeric: tabular-nums; color: var(--tungsten); }
 .readout-work { color: var(--ink); font-weight: 560; }
+/* o nome troca subindo, a cada trabalho que sai da pasta */
+.works-readout.is-flip span { animation: readout-in 520ms var(--ease-out) both; }
+.works-readout.is-flip .readout-work { animation-delay: 70ms; }
+@keyframes readout-in { from { opacity: 0; transform: translateY(0.6em); } to { opacity: 1; transform: none; } }
+.readout-count, .readout-work { display: inline-block; }
 
 /* ---- a pasta ---- */
 .folders { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
@@ -506,6 +462,11 @@ body {
 }
 .gf:hover, .gf:focus-within { --gf-hinge: -11deg; --gf-lift: -34px; --gf-spread: 8px; --gf-fan: 1.4deg; --gf-stack: 10px; }
 .gf[data-open] { --gf-hinge: -24deg; --gf-lift: -96px; --gf-spread: 40px; --gf-fan: 5deg; --gf-stack: 30px; }
+/* aberta, os arquivos se espalham em degraus, cada nome à mostra */
+.gf[data-open] { --gf-spread: 22px; --gf-fan: 2.5deg; --gf-stack: 46px; }
+/* fechada: a tampa entreaberta e os arquivos em cascata, cada um com a faixa do nome à mostra */
+.gf:not([data-open]) { --gf-hinge: -8deg; --gf-lift: -10px; --gf-spread: 0px; --gf-fan: 0deg; --gf-stack: 32px; }
+.gf:not([data-open]):hover, .gf:not([data-open]):focus-within { --gf-hinge: -13deg; --gf-lift: -16px; --gf-stack: 34px; }
 .gf-stage { position: absolute; left: 0; top: 0; width: 340px; height: 272px; transform-origin: 0 0; }
 .gf-tilt {
   position: absolute; inset: 0;
@@ -559,11 +520,16 @@ body {
     transform .75s var(--gf-spring) calc(var(--gf-depth) * 40ms),
     box-shadow .4s var(--gf-ease),
     translate .9s var(--gf-ease),
-    opacity .9s var(--gf-ease);
+    opacity .9s var(--gf-ease),
+    filter .5s var(--gf-ease);
 }
 .gf-sheet--art { background: #1a1a1d; }
 /* a folha da vez sobe acima do vidro; aberta a pasta, cada folha é um link */
-.gf-sheet.is-called { translate: 0 -112px; }
+/* o arquivo da vez sobe um pouco na cascata: aparece mais, e como a ordem da pilha não
+   muda, ele nunca passa na frente dos que estão à frente dele */
+.gf-sheet.is-called { translate: 0 -24px; box-shadow: inset 0 0 0 1.5px var(--tungsten), 0 18px 34px -10px rgba(0, 0, 0, .8); }
+/* os outros escurecem um pouco enquanto um está em destaque */
+.gf-files.has-call .gf-sheet:not(.is-called) { filter: brightness(.6); }
 .gf[data-open] button.gf-sheet { pointer-events: auto; cursor: pointer; }
 .gf[data-open] .gf-sheet:hover, .gf[data-open] .gf-sheet:focus-visible {
   transform:
@@ -576,7 +542,7 @@ body {
 .gf-sheet-art { position: absolute; left: 0; top: 0; width: 272px; height: 184px; max-width: none; object-fit: cover; }
 .gf-sheet--art::after {
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: linear-gradient(180deg, rgba(0, 0, 0, .55) 0%, rgba(0, 0, 0, 0) 38%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, .55) 0%, rgba(0, 0, 0, 0) 38%), rgba(0, 0, 0, .22);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2);
 }
 /* sem pôster, a folha mostra o número do trabalho */
@@ -601,7 +567,7 @@ body {
 /* a frente de vidro */
 .gf-front {
   position: absolute; left: 0; top: 74px; width: 340px; height: 198px; z-index: 10; border-radius: 22px;
-  -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5);
+  -webkit-backdrop-filter: blur(5px) saturate(1.35); backdrop-filter: blur(5px) saturate(1.35);
   transform-origin: 50% 100%;
   transform: perspective(760px) rotateX(var(--gf-hinge));
   transition: transform .8s var(--gf-spring), translate 1s var(--gf-ease), opacity 1s var(--gf-ease);
@@ -613,7 +579,8 @@ body {
   70% { scale: .996 1.006; }
   100% { scale: 1; }
 }
-.gf-tint { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(18, 18, 20, .18) 0%, rgba(14, 14, 16, .62) 46%, rgba(8, 8, 10, .94) 100%); }
+/* clara no alto (os arquivos aparecem) e mais escura embaixo, onde está o nome da pasta */
+.gf-tint { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(18, 18, 20, .05) 0%, rgba(14, 14, 16, .32) 46%, rgba(8, 8, 10, .84) 100%); }
 .gf-spec {
   position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; opacity: .16;
   background: radial-gradient(260px 200px at calc(50% + var(--gf-px) * 46%) calc(30% + var(--gf-py) * 40%), rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 70%);
@@ -627,6 +594,7 @@ body {
 .gf-label {
   position: absolute; z-index: 2; left: 28px; bottom: 30px; right: 28px;
   display: flex; flex-direction: column; gap: 5px; pointer-events: none; color: #f5f5f7;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, .8);
 }
 .gf-title {
   font-size: calc(max(19px * var(--s), 13px) / var(--s)); font-weight: 600; line-height: 1.15; letter-spacing: -.012em;
@@ -944,17 +912,10 @@ button.note { all: unset; position: absolute; z-index: 3; display: flex; align-i
 .index .i-num { font-weight: 700; font-stretch: 80%; }
 .index .i-label { white-space: nowrap; }
 
-.timecode { margin-left: auto; color: var(--room-dim); letter-spacing: 0.02em; }
-.next { display: flex; align-items: center; gap: 9px; height: 100%; color: var(--room-text); white-space: nowrap; }
-.next:hover { color: #fff; }
-.cue { width: 8px; height: 8px; border-radius: 50%; background: var(--tungsten); flex: none; }
-.cue.is-blink { animation: cue-blink 640ms steps(1) 2; }
-@keyframes cue-blink { 0% { opacity: 1; } 25% { opacity: 0; } 50% { opacity: 1; } 75% { opacity: 0; } }
 
 @media (max-width: 1100px) { .index .i-label { display: none; } .index .i-label--short { display: inline; } }
 @media (min-width: 1101px) { .index .i-label--short { display: none; } }
 @media (max-width: 720px) {
-  .timecode { display: none; }
   .hud { font-size: 13px; }
   .index { gap: 14px; }
 }
@@ -1013,10 +974,10 @@ button.note { all: unset; position: absolute; z-index: 3; display: flex; align-i
 /* ---------- Movimento desligado ---------- */
 
 .motion-off .grain { animation: none; }
-.motion-off .cell.is-flip, .motion-off .cue.is-blink { animation: none; }
+.motion-off .cell.is-flip { animation: none; }
 .motion-off .monitor, .motion-off .monitor > span, .motion-off .caos-l, .motion-off .caos-l::after { transition: none; }
 .motion-off .is-titled .name-line .ch { transition: none; }
-.motion-off .title-box.is-cue::after, .motion-off .title-box.is-call, .motion-off .title-box.is-back, .motion-off .title-tint , .motion-off .presets button::after { animation: none; }
+.motion-off .title-box.is-cue::after, .motion-off .title-box.is-call, .motion-off .title-box.is-back, .motion-off .title-tint , .motion-off .presets button::after , .motion-off .onion-splash, .motion-off .works-readout span  { animation: none; }
 .motion-off .title-drop path, .motion-off .title-zone svg { animation: none !important; }
 .motion-off .sign path { stroke-dashoffset: 0; transition: none; }
 .motion-off .title-light { transition: none; }
@@ -1063,6 +1024,9 @@ html { scrollbar-width: thin; scrollbar-color: #3a3a37 var(--room); }
   background: #000; opacity: var(--dim, 0);
 }
 /* a que chega traz a borda do quadro e uma sombra sobre a de baixo */
+/* enquanto a cena está recortada (chegando ou sendo coberta), o vidro da pasta perde o
+   desfoque: sem ele o recorte da silhueta volta a valer e nada vaza para fora da pasta */
+.stage.is-cut .gf-front { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(13, 13, 15, 0.46); }
 .stage.is-arriving { box-shadow: 0 -28px 60px -24px rgba(0, 0, 0, 0.9), 0 -1px 0 rgba(255, 255, 255, 0.08); }
 
 /* ---------- O rolo de vídeos ---------- */
@@ -1091,16 +1055,15 @@ html { scrollbar-width: thin; scrollbar-color: #3a3a37 var(--room); }
 .motion-off .stage { transform: none !important; border-radius: 0 !important; }
 
 /* ---------- Entrada ----------
-   A primeira cena chega de longe, menor, inclinada para trás e com os cantos da
-   janela do projetor; encosta na tela num zoom que desacelera. O HUD vem depois. */
+   O letreiro chega num empurrão lento de câmera, com as letras se revelando uma a
+   uma; o resto da página só aparece quando o nome assenta no alto. */
 
-@keyframes v1-enter {
-  0% { opacity: 0; transform: perspective(1600px) translateY(7vh) rotateX(14deg) scale(0.74); border-radius: 40px; }
-  22% { opacity: 1; }
-  100% { opacity: 1; transform: none; border-radius: 0; }
+@keyframes v1-open { from { opacity: 0; transform: scale(1.06); } to { opacity: 1; transform: none; } }
+.is-opening .film > .scene:first-child > .stage > .frame {
+  animation: v1-open 1800ms cubic-bezier(0.16, 1, 0.3, 1) both; transform-origin: 50% 46%;
 }
-.is-entering .film > .scene:first-child > .stage { animation: v1-enter 1600ms cubic-bezier(0.16, 1, 0.3, 1) both; transform-origin: 50% 70%; }
-.is-entering .hud { transition-delay: 1000ms; }
+/* enquanto o letreiro está na tela cheia, nada mais aparece */
+.is-opening .hud, .is-opening .title-hint { opacity: 0; }
 .motion-off .stage::after { opacity: 0; }
 
 /* ---------- Sem script: as cenas descem uma depois da outra ---------- */

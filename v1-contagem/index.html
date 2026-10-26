@@ -15,18 +15,6 @@
 </head>
 <body>
 
-<div class="intro" aria-hidden="true">
-  <svg class="intro-leader" viewBox="-100 -100 200 200">
-    <line class="intro-cross" x1="-400" y1="0" x2="400" y2="0"/>
-    <line class="intro-cross" x1="0" y1="-400" x2="0" y2="400"/>
-    <circle class="intro-ring" r="64" pathLength="1"/>
-    <circle class="intro-ring intro-ring--in" r="54" pathLength="1"/>
-    <line class="intro-hand" x1="0" y1="0" x2="0" y2="-74"/>
-    <circle class="intro-cue" cx="58" cy="-58" r="2.6"/>
-  </svg>
-  <span class="intro-tc">00:00:00:00</span>
-</div>
-
 <header class="hud hud-top">
   <button class="mark" type="button" data-home data-t-attr="aria-label:ui.home">
     <span class="mark-text">SC</span>
@@ -39,7 +27,7 @@
 
 <main class="film" id="film">
 
-  <section class="scene" id="apresentacao" data-scene="title" style="--len: 4" aria-labelledby="t-intro">
+  <section class="scene" id="apresentacao" data-scene="title" style="--len: 2" aria-labelledby="t-intro">
     <div class="stage">
       <div class="frame frame--title">
         <canvas class="title-light" aria-hidden="true"></canvas>
@@ -55,7 +43,7 @@
           <p class="sr-only" data-roles-text></p>
           <p class="lead" data-t="v1.lead"></p>
           <p class="title-play">
-            <span class="title-box"><span class="title-tint" aria-hidden="true"></span><span class="title-text" data-t="v1.box">Clique, arraste, faça o que quiser!</span><span class="title-drop" aria-hidden="true"><svg viewBox="0 0 24 60"><path d="M4 6L12 14L20 6"/><path d="M4 24L12 32L20 24"/><path d="M4 42L12 50L20 42"/></svg></span></span>
+            <span class="title-box"><span class="title-tint" aria-hidden="true"></span><span class="title-text" data-t="v1.box">Clique, arraste!</span><span class="title-drop" aria-hidden="true"><svg viewBox="0 0 24 60"><path d="M4 6L12 14L20 6"/><path d="M4 24L12 32L20 24"/><path d="M4 42L12 50L20 42"/></svg></span></span>
           </p>
         </div>
         <p class="title-hint" data-hint></p>
@@ -64,7 +52,7 @@
     </div>
   </section>
 
-  <section class="scene" id="design" data-scene="design" style="--len: 4" aria-labelledby="t-design">
+  <section class="scene" id="design" data-scene="design" style="--len: 2.25" aria-labelledby="t-design">
     <div class="stage">
       <div class="frame frame--design">
         <canvas class="lattice" aria-hidden="true"></canvas>
@@ -84,7 +72,6 @@
             <span class="m-words" aria-hidden="true"></span>
             <span class="m-text" aria-hidden="true" data-t="v1.design.sub"></span>
             <span class="m-ratio" aria-hidden="true">16:9</span>
-            <span class="m-scroll" aria-hidden="true"></span>
             <span class="m-handle" role="slider" tabindex="0" aria-valuemin="0.5" aria-valuemax="2.2" data-t-attr="aria-label:v1.design.handle"></span>
           </div>
           <p class="sr-only" data-t="v1.design.sr"></p>
@@ -93,7 +80,7 @@
     </div>
   </section>
 
-  <section class="scene" id="interacao" data-scene="play" style="--len: 3.85" aria-labelledby="t-play">
+  <section class="scene" id="interacao" data-scene="play" style="--len: 2.25" aria-labelledby="t-play">
     <div class="stage">
       <div class="frame frame--play">
         <canvas class="play-bg" aria-hidden="true"></canvas>
@@ -145,7 +132,7 @@
     </div>
   </section>
 
-  <section class="scene" id="trabalhos" data-scene="works" style="--len: 3.6" aria-labelledby="t-works">
+  <section class="scene" id="trabalhos" data-scene="works" style="--len: 2.25" aria-labelledby="t-works">
     <div class="stage">
       <div class="frame frame--works">
         <div class="onion">
@@ -153,7 +140,9 @@
             <path class="onion-path" d="" aria-hidden="true"/>
             <path class="onion-run" d="" pathLength="1000" aria-hidden="true"/>
             <g class="onion-ghosts" aria-hidden="true"></g>
+            <circle class="onion-splash" r="30" cx="0" cy="0" aria-hidden="true"/>
             <circle class="onion-dot" r="24" cx="0" cy="0" aria-hidden="true"/>
+            <circle class="onion-toss" r="24" cx="0" cy="0" opacity="0" aria-hidden="true"/>
           </svg>
         </div>
         <div class="folders"></div>
@@ -196,11 +185,6 @@
 
 <nav class="hud hud-bottom" data-t-attr="aria-label:ui.chapters">
   <ol class="index" data-index></ol>
-  <span class="timecode" aria-hidden="true">00:00:00:00</span>
-  <button type="button" class="next" data-next>
-    <span class="cue" aria-hidden="true"></span>
-    <span class="next-label"></span>
-  </button>
 </nav>
 
 <div class="grain" aria-hidden="true"></div>

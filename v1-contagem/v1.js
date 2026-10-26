@@ -28,7 +28,6 @@
   var t = Site.t;
   var motionOn = function () { return Site.motion(); };
   var nW = S.works.length;
-  function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
   var scenes = $$('.scene').map(function (el) {
     return { el: el, key: el.getAttribute('data-scene'), stage: $('.stage', el), top: 0, h: 0, last: '' };
@@ -84,6 +83,9 @@
     st.setProperty('--dim', dim.toFixed(3));
     st.willChange = fout > 0 && fout < 1 ? 'transform' : '';
     s.stage.classList.toggle('is-arriving', arriving);
+    // com os cantos do projetor a cena passa a ser recortada, e nesse trecho o navegador
+    // deixa de recortar o que tem desfoque de fundo: o vidro da pasta vira camada comum
+    s.stage.classList.toggle('is-cut', rad > 0.05);
   }
 
   /* ---------- O rolo ----------
@@ -215,7 +217,6 @@
   }
 
   var hudCh = -1, prLast = [], hashNow = '';
-  var nextBtn = $('[data-next]'), nextLabel = $('.next-label'), cue = $('.cue'), tcEl = $('.timecode');
   function updateHud(y) {
     var ci = 0;
     for (var i = 0; i < CH.length; i++) if (chStart(i) <= y + VH * 0.5) ci = i;
@@ -232,10 +233,6 @@
         b.classList.toggle('is-current', k === ci);
         if (k === ci) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
       });
-      if (ci >= CH.length - 1) nextLabel.textContent = t('v1.restart');
-      else nextLabel.textContent = (CH[ci + 1].num ? CH[ci + 1].num + ' ' : '') + t(CH[ci + 1].key);
-      cue.classList.remove('is-blink'); void cue.offsetWidth;
-      if (motionOn()) cue.classList.add('is-blink');
     }
     // o endereço acompanha a leitura; dentro do rolo, o vídeo da vez
     var h = CH[ci].hash;
@@ -244,11 +241,7 @@
       hashNow = h;
       try { history.replaceState(null, '', '#' + h); } catch (e) { /* file:// */ }
     }
-    // o timecode é a posição da página no filme: cada tela, quatro segundos
-    var f = Math.floor(y / VH * 4 * 24);
-    tcEl.textContent = pad(Math.floor(f / 86400)) + ':' + pad(Math.floor(f / 1440) % 60) + ':' + pad(Math.floor(f / 24) % 60) + ':' + pad(f % 24);
   }
-  nextBtn.addEventListener('click', function () { if (hudCh >= CH.length - 1) goChapter(0); else goChapter(hudCh + 1); });
   $('[data-home]').addEventListener('click', function () { goChapter(0); });
 
   /* ---------- Laço ---------- */
@@ -303,52 +296,14 @@
     scrollToY(ci0 > 0 ? chStart(ci0) : 0, true);
   }
 
-  /* ---------- Introdução: o projetor acende ----------
-     A tela começa preta, com a cruz e os anéis de uma ponta de filme se riscando
-     e o timecode correndo um segundo de quadros. Então um ponteiro de tungstênio
-     dá uma volta e, por onde passa, abre a página por baixo, que chega de longe
-     num zoom (a entrada). Qualquer gesto pula para o fim. */
+  /* ---------- Início da página ----------
+     A abertura é o próprio letreiro: o nome ocupa a tela, fica um instante e sobe
+     para o lugar dele. Com um capítulo no endereço, a página já abre nele. */
 
-  var introEl = $('.intro');
-  function startPage() {
-    if (motionOn() && !h0) {
-      root.classList.add('is-entering');
-      setTimeout(function () { root.classList.remove('is-entering'); }, 1900);
-    }
-    requestAnimationFrame(function () { root.classList.add('is-ready'); });
-    C.titleIn();
-  }
-  function runIntro() {
-    var t0 = performance.now(), tc = $('.intro-tc', introEl), hand = $('.intro-hand', introEl);
-    var COUNT = 700, SWEEP = 900, opened = false, done = false;
-    var skipEvents = ['wheel', 'keydown', 'pointerdown', 'touchstart'];
-    function finish() {
-      if (done) return;
-      done = true;
-      skipEvents.forEach(function (ev) { window.removeEventListener(ev, finish, true); });
-      if (!opened) { opened = true; startPage(); }
-      introEl.classList.add('is-out');
-      setTimeout(function () { introEl.remove(); }, 420);
-    }
-    function step(now) {
-      if (done) return;
-      var el = now - t0;
-      var f = Math.min(24, Math.floor(el / COUNT * 24));
-      tc.textContent = '00:00:' + (f >= 24 ? '01:00' : '00:' + pad(f));
-      if (el >= COUNT && !opened) { opened = true; startPage(); }
-      var a = 360 * inOut(clamp((el - COUNT) / SWEEP, 0, 1));
-      introEl.style.setProperty('--a', a.toFixed(2) + 'deg');
-      hand.setAttribute('transform', 'rotate(' + a.toFixed(2) + ')');
-      if (el >= COUNT + SWEEP) { finish(); return; }
-      requestAnimationFrame(step);
-    }
-    introEl.classList.add('is-on');
-    skipEvents.forEach(function (ev) { window.addEventListener(ev, finish, true); });
-    requestAnimationFrame(step);
-  }
   C.ready();
-  if (motionOn() && !h0 && introEl) runIntro();
-  else { if (introEl) introEl.remove(); startPage(); }
+  requestAnimationFrame(function () { root.classList.add('is-ready'); });
+  C.titleIn(!!h0);
+
   // quando a fonte chega as cenas mudam de medida
   if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(function () { measure(); });
   requestAnimationFrame(tick);

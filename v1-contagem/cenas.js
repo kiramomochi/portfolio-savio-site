@@ -31,12 +31,12 @@
 
     Site.addStrings({
       'v1.lead': 'Design, edição, motion e web.',
-      'v1.box': 'Clique, arraste, faça o que quiser!',
+      'v1.box': 'Clique, arraste!',
       'v1.box.zone': 'ARREMESSE',
       'v1.design.title': 'Design',
       'v1.design.sub': 'E o caos volta a se tornar design!',
       'v1.design.formats': 'Formatos',
-      'v1.design.claim': 'A arte de brincar com o:',
+      'v1.design.claim': 'É a arte de brincar com o:',
       'v1.design.caos': 'caos',
       'v1.design.caosLabel': 'caos: ordenar ou desordenar as letras',
       'v1.design.handle': 'Proporção do quadro. Use as setas para mudar.',
@@ -44,7 +44,7 @@
       'v1.w.motion': 'movimento',
       'v1.w.makes': 'gera',
       'v1.w.form': 'forma',
-      'v1.works.sr': 'A abertura dos trabalhos: uma pasta de vidro com os trabalhos dentro. Um ponto percorre um arco e cai dentro dela, e a cada queda uma folha sobe. Abrir a pasta espalha as folhas, e cada folha leva direto ao vídeo daquele trabalho.',
+      'v1.works.sr': 'A abertura dos trabalhos: uma pasta de vidro com os trabalhos dentro, todos à vista. Um destaque passa de um em um pelos trabalhos. Abrir a pasta espalha os arquivos, e cada arquivo leva direto ao vídeo daquele trabalho.',
       'v1.works.folder': 'Vídeos',
       'v1.works.items': '{n} trabalhos',
       'v1.works.open': 'Abrir a pasta',
@@ -66,17 +66,16 @@
       'v1.handle': 'Alça {n}: tempo {x}, valor {y}. Use as setas para mover.',
       'v1.credits': 'Créditos',
       'v1.end': 'Fim',
-      'v1.restart': 'Do início',
       'v1.of': 'de',
       'v1.soon': 'em breve'
     }, {
       'v1.lead': 'Design, editing, motion and web.',
-      'v1.box': 'Click, drag, do whatever you want!',
+      'v1.box': 'Click, drag!',
       'v1.box.zone': 'THROW IT',
       'v1.design.title': 'Design',
       'v1.design.sub': 'And chaos turns back into design!',
       'v1.design.formats': 'Formats',
-      'v1.design.claim': 'The art of playing with:',
+      'v1.design.claim': "It's the art of playing with:",
       'v1.design.caos': 'chaos',
       'v1.design.caosLabel': 'chaos: put the letters in order or scramble them',
       'v1.design.handle': 'Frame proportion. Use the arrow keys to change it.',
@@ -84,7 +83,7 @@
       'v1.w.motion': 'motion',
       'v1.w.makes': 'makes',
       'v1.w.form': 'form',
-      'v1.works.sr': 'The opening of the work chapter: one glass folder with the work inside. A dot travels an arc and drops into it, and each drop lifts a sheet. Opening the folder fans the sheets out, and each sheet leads straight to that video.',
+      'v1.works.sr': 'The opening of the work chapter: one glass folder with the work inside, all of it in view. A highlight moves through the work one by one. Opening the folder fans the files out, and each file leads straight to that video.',
       'v1.works.folder': 'Videos',
       'v1.works.items': '{n} pieces',
       'v1.works.open': 'Open the folder',
@@ -106,7 +105,6 @@
       'v1.handle': 'Handle {n}: time {x}, value {y}. Use the arrow keys to move it.',
       'v1.credits': 'Credits',
       'v1.end': 'End',
-      'v1.restart': 'From the top',
       'v1.of': 'of',
       'v1.soon': 'coming soon'
     });
@@ -235,7 +233,7 @@
         s.className = 'ch';
         s.setAttribute('aria-hidden', 'true');
         s.textContent = c;
-        s.style.transitionDelay = (120 + i * 38) + 'ms';
+        s.style.transitionDelay = (90 + i * 30) + 'ms';
         line.appendChild(s);
       });
     });
@@ -617,9 +615,8 @@
     var monArea = $('.monitor-area');
     var fmtBtns = $$('[data-format]');
     var FORMATS = [[16, 9], [1, 1], [9, 16], [4, 5]];
-    var fmt = 0, fmtLock = -100;
-    // manual: o visitante pegou o canto, e a rolagem deixa a proporção com ele até a cena sair
-    var mon = { a: 16 / 9, k: 1, tw: null, manual: false };
+    var fmt = 0, fmtLock = -100, fmtNext = 0;
+    var mon = { a: 16 / 9, k: 1, tw: null };
     var A_MIN = 0.5, A_MAX = 2.2;
     // posições em frações do quadro para as quatro proporções; entre elas, interpola
     var COMP = [
@@ -650,7 +647,7 @@
     var wordsEl = $('.m-words');
     var CHAIN = ['motion', 'makes', 'form', 'makes'];
     var WLH = 0.92, WROLL = 1.15, WSTAG = 0.09, WHOLD = 2.8, WTRAIL = [0.07, 0.14, 0.21];
-    var chain = { k: 0, roll: -1, next: 2, n: 0, fmtAt: 0, last: -10, unit: null, pool: [], ghosts: [] };
+    var chain = { k: 0, roll: -1, next: 2, n: 0, last: -10, unit: null, pool: [], ghosts: [] };
     var wMeasure = doc.createElement('span');
     wMeasure.setAttribute('aria-hidden', 'true');
     doc.body.appendChild(wMeasure);
@@ -879,7 +876,8 @@
       mon.k = lerp(mon.tw.k0, mon.tw.k1, e);
       layoutMonitor();
       syncFormatUi();
-      if (u >= 1) mon.tw = null;
+      // chegou na forma nova: fica parada um segundo e já vai para a seguinte
+      if (u >= 1) { mon.tw = null; fmtNext = clock + 1; }
     }
     function setFormat(i, instant) {
       fmt = i;
@@ -924,11 +922,11 @@
       monitor.style.setProperty('--gx', (glass.x * 100).toFixed(1) + '%');
       monitor.style.setProperty('--gy', (glass.y * 100).toFixed(1) + '%');
     }
-    function designFx(dt, v) {
+    function designFx(dt) {
       var live = motionOn(), ov = E.overview();
       var gp = ptr.on && !ov ? toLocal(designFrame, ptr.x, ptr.y) : null;
       var sp = ptr.on && !ov ? toLocal(monitor, ptr.x, ptr.y) : null;
-      if (lattice) lattice.frame(dt, gp ? gp.x : 0, gp ? gp.y : 0, !!(gp && gp.inside), v, live);
+      if (lattice) lattice.frame(dt, gp ? gp.x : 0, gp ? gp.y : 0, !!(gp && gp.inside), 0, live);
       if (shapes) {
         shapes.obstacles(textRects(), mon.blob ? [mon.blob] : []);
         shapes.frame(dt, live, sp ? sp.x : 0, sp ? sp.y : 0, !!(sp && sp.inside));
@@ -989,7 +987,6 @@
       var r = monitor.getBoundingClientRect();
       mdrag = { id: e.pointerId, cx: r.left + r.width / 2, cy: r.top + r.height / 2, sc: r.width / Math.max(1, monitor.offsetWidth), a: mon.a };
       mon.tw = null;
-      mon.manual = true;
       fmtLock = clock;
       monitor.classList.add('is-resizing');
       try { handle.setPointerCapture(e.pointerId); } catch (err) { /* ok */ }
@@ -1025,7 +1022,6 @@
       e.preventDefault();
       fmtLock = clock;
       mon.tw = null;
-      mon.manual = true;
       mon.a = clamp(a, A_MIN, A_MAX);
       mon.k = clamp(k, 0.45, 1);
       kickBlob(0.3);
@@ -1035,20 +1031,24 @@
 
     /* ---------- 4 · Trabalhos recentes: a abertura do capítulo ----------
        Uma pasta de vidro guarda os trabalhos (desenho do Glassmorphism Folder
-       Cards, de Kedhareswer Naidu, licença MIT, reescrito sem React). O ponto
-       continua percorrendo o arco com as cópias do caminho atrás dele, mas agora
-       só guia o olhar: ele cai dentro da pasta, e cada queda levanta a folha de
-       um trabalho. Clicar abre a pasta e espalha as folhas; cada folha leva ao vídeo. */
+       Cards, de Kedhareswer Naidu, licença MIT, reescrito sem React). A cena é
+       parada (a rolagem não mexe em nada dela) e os arquivos ficam sempre à vista,
+       vistos através da frente de vidro. O movimento só destaca um trabalho depois
+do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
+       pasta, e a cada queda o arquivo da vez sobe um pouco na cascata, sem passar na
+       frente dos que estão à frente dele. Clicar no vazio joga um ponto até a pasta;
+       clicar na pasta abre e espalha os arquivos, e cada arquivo leva ao vídeo. */
 
     var onion = {
       svg: $('.onion-svg'), path: $('.onion-path'), run: $('.onion-run'), g: $('.onion-ghosts'),
-      dot: $('.onion-dot'), ghosts: [], len: [], w: 1000, h: 360, r: 22, portrait: false
+      dot: $('.onion-dot'), toss: $('.onion-toss'), splash: $('.onion-splash'),
+      ghosts: [], len: [], w: 1000, h: 360, r: 22, portrait: false, P0: null
     };
     // o ponto anda sozinho, sempre mirando a pasta: um passo (STEP) até o bolso e uma
-    // pausa (HOLD), uma vez por trabalho. A rolagem, à parte, destaca as folhas (sel)
-    var WGN = 7, WK_STEP = 1.2, WK_HOLD = 1.3;
-    var WK_CYCLE = nW * (WK_STEP + WK_HOLD);
-    var wk = { start: 0, cur: -1, hover: -1, called: -1, landed: -1, sel: -2 };
+    // pausa (HOLD), uma vez por trabalho; a folha da vez fica no alto por CALL
+    var WGN = 7, WK_STEP = 1.2, WK_HOLD = 1.3, WK_CALL = 1.05, WK_TOSS = 0.75;
+    var WK_SPAN = WK_STEP + WK_HOLD, WK_CYCLE = nW * WK_SPAN;
+    var wk = { start: 0, cur: -1, hover: -1, called: -1, landed: -1, callEnd: 0, toss: null, lastT: 0, bx: 0, by: 0, ax: 0, ay: 0 };
     var openNote = $('.note--open', worksFrame);
     var readCount = $('.readout-count'), readWork = $('.readout-work');
     var NS = 'http://www.w3.org/2000/svg';
@@ -1135,14 +1135,15 @@
       folder.hit.setAttribute('aria-expanded', on ? 'true' : 'false');
       folder.sheets.forEach(function (sh) { sh.el.tabIndex = on ? 0 : -1; });
       worksFrame.classList.toggle('is-open', on);
-      // aberta, a pasta mostra todas; fechada, volta a folha que a rolagem destacou
-      if (on) callSheet(-1); else wk.sel = -2;
+      // aberta, a pasta mostra todos sem destaque
+      if (on) callSheet(-1);
       renderFolder();
     }
     // a folha do trabalho da vez sobe acima do vidro
     function callSheet(k) {
       if (wk.called === k) return;
       wk.called = k;
+      $('.gf-files', folder.root).classList.toggle('has-call', k >= 0);
       folder.sheets.forEach(function (sh) { sh.el.classList.toggle('is-called', sh.k === k); });
     }
     function bump() {
@@ -1150,6 +1151,25 @@
       void folder.front.offsetWidth;
       folder.front.classList.add('gf-front--bump');
     }
+    // um anel se abre na boca do bolso a cada queda
+    function splash() {
+      var sp = onion.splash, P = onion.P;
+      if (!sp || !P) return;
+      sp.setAttribute('cx', P[6].toFixed(1));
+      sp.setAttribute('cy', P[7].toFixed(1));
+      sp.classList.remove('is-on'); void sp.getBoundingClientRect(); sp.classList.add('is-on');
+    }
+    // o destaque da vez: a pasta dá um tranco com um anel na boca do bolso, o arquivo do
+    // trabalho sobe na cascata e o nome dele aparece embaixo do título
+    function focusWork(k) {
+      if (folder.open) return;
+      bump(); splash();
+      callSheet(k);
+      wk.callEnd = clock + WK_CALL;
+      wk.cur = k;
+      renderWork(true);
+    }
+
     function setHover(k) {
       if (wk.hover === k) return;
       wk.hover = k;
@@ -1172,7 +1192,13 @@
         ['pointerenter', 'focus'].forEach(function (ev) { sh.el.addEventListener(ev, function () { if (folder.open) setHover(sh.k); }); });
         ['pointerleave', 'blur'].forEach(function (ev) { sh.el.addEventListener(ev, function () { setHover(-1); }); });
       });
-      worksFrame.addEventListener('click', function () { setOpen(false); });
+      // clique no vazio: fecha a pasta aberta; fechada, joga um ponto dali até ela
+      worksFrame.addEventListener('click', function (e) {
+        if (folder.open) { setOpen(false); return; }
+        if (!motionOn() || e.target.closest('.note, a, button')) return;
+        var p = toLocal(worksFrame, e.clientX, e.clientY);
+        wk.toss = { x: p.x, y: p.y, t0: clock };
+      });
       // o bilhete ao lado da pasta também abre
       if (openNote) openNote.addEventListener('click', function (e) { e.stopPropagation(); setOpen(true); });
       worksFrame.addEventListener('keydown', function (e) {
@@ -1259,10 +1285,22 @@
       }
       placeFolder(folder, x, yb - (GF_H + GF_ROOM) * s, s);
       var cx = x + GF_W * s / 2, top = yb - GF_H * s, pocket = top + (GF_FRONT + 44) * s;
-      var P = onion.P = onion.portrait
+      onion.P0 = onion.portrait
         ? [w * -0.03, top - h * 0.06, w * 0.24, top - h * 0.24, cx, top - h * 0.3, cx, pocket]
         : [w * -0.03, h * 0.64, w * 0.3, h * 0.66, cx, h * -0.06, cx, pocket];
-      var d = 'M' + P[0] + ',' + P[1] + ' C' + P[2] + ',' + P[3] + ' ' + P[4] + ',' + P[5] + ' ' + P[6] + ',' + P[7];
+      bendArc(wk.bx, wk.by);
+      onion.dot.setAttribute('r', onion.r);
+      if (onion.toss) onion.toss.setAttribute('r', onion.r);
+      onion.ghosts.forEach(function (g) { g.el.setAttribute('r', (onion.r * 0.94).toFixed(1)); });
+      placeOpenNote(x, yb, s);
+      if (motionOn()) drawOnion(clock || 0); else staticOnion();
+    }
+    // o arco com o meio deslocado (bx, by): é assim que ele se curva na direção do cursor
+    function bendArc(bx, by) {
+      var P0 = onion.P0;
+      if (!P0) return;
+      var P = onion.P = [P0[0], P0[1], P0[2] + bx * 0.5, P0[3] + by * 0.5, P0[4] + bx, P0[5] + by, P0[6], P0[7]];
+      var d = 'M' + P[0].toFixed(1) + ',' + P[1].toFixed(1) + ' C' + P[2].toFixed(1) + ',' + P[3].toFixed(1) + ' ' + P[4].toFixed(1) + ',' + P[5].toFixed(1) + ' ' + P[6].toFixed(1) + ',' + P[7].toFixed(1);
       onion.path.setAttribute('d', d);
       onion.run.setAttribute('d', d);
       onion.len = [];
@@ -1272,11 +1310,45 @@
         onion.len.push(acc);
         prev = q;
       }
-      onion.dot.setAttribute('r', onion.r);
-      onion.ghosts.forEach(function (g) { g.el.setAttribute('r', (onion.r * 0.94).toFixed(1)); });
       onion.u0 = uAtLen(0.02);
-      placeOpenNote(x, yb, s);
-      if (motionOn()) drawOnion(clock || 0); else staticOnion();
+      wk.ax = bx; wk.ay = by;
+    }
+    // o meio do arco segue o cursor de longe (no máximo um oitavo do quadro), com folga
+    function followPointer(dt) {
+      var P0 = onion.P0, tx = 0, ty = 0;
+      if (P0 && ptr.on && ptr.mouse && !E.overview()) {
+        var p = toLocal(worksFrame, ptr.x, ptr.y);
+        if (p.inside) {
+          tx = clamp((p.x - P0[4]) * 0.35, -onion.w * 0.12, onion.w * 0.12);
+          ty = clamp((p.y - P0[5]) * 0.35, -onion.h * 0.1, onion.h * 0.22);
+        }
+      }
+      var f = 1 - Math.exp(-dt / 260);
+      wk.bx += (tx - wk.bx) * f; wk.by += (ty - wk.by) * f;
+      if (Math.abs(wk.bx - wk.ax) + Math.abs(wk.by - wk.ay) > 0.6) bendArc(wk.bx, wk.by);
+    }
+    // o ponto jogado: uma parábola do clique até o bolso; ao cair, adianta o trabalho e
+    // acerta o relógio do ponto do arco para ele seguir a partir dali
+    function drawToss(T) {
+      var tz = wk.toss, P = onion.P;
+      if (!onion.toss) return;
+      if (!tz) { onion.toss.setAttribute('opacity', '0'); return; }
+      var u = clamp((T - tz.t0) / WK_TOSS, 0, 1), e = u * u * (3 - 2 * u);
+      var x1 = P[6], y1 = P[7], mx = (tz.x + x1) / 2, my = Math.min(tz.y, y1) - onion.h * 0.28;
+      var m = 1 - e, x = m * m * tz.x + 2 * m * e * mx + e * e * x1, y = m * m * tz.y + 2 * m * e * my + e * e * y1;
+      onion.toss.setAttribute('cx', x.toFixed(1));
+      onion.toss.setAttribute('cy', y.toFixed(1));
+      onion.toss.setAttribute('r', (onion.r * (1 - 0.35 * e)).toFixed(1));
+      onion.toss.setAttribute('opacity', '1');
+      if (u >= 1) {
+        // o trabalho seguinte ao da vez (decidido na queda: o ponto do arco pode ter caído antes)
+        var k = (wk.cur + 1) % nW;
+        wk.toss = null;
+        onion.toss.setAttribute('opacity', '0');
+        wk.start = T - (k * WK_SPAN + WK_STEP + 0.01);
+        wk.landed = k;
+        focusWork(k);
+      }
     }
     function placeDot(u, r) {
       var p = onionPoint(u);
@@ -1306,10 +1378,16 @@
         st.top = 'auto'; st.bottom = (onion.h - (yb - GF_H * s) + GF_ROOM * s * 0.1 + 6).toFixed(1) + 'px';
       }
     }
-    // o ponto percorre o arco e cai no bolso; ao cair, a pasta dá um tranco
+    // o ponto percorre o arco e cai no bolso; ao cair, a pasta dá um tranco e um trabalho sai
     function drawOnion(T) {
       if (!onion.P) return;
-      var span = WK_STEP + WK_HOLD, tau = T - wk.start;
+      var dt = clamp((T - wk.lastT) * 1000, 0, 64);
+      wk.lastT = T;
+      followPointer(dt);
+      drawToss(T);
+      // a folha da vez volta para a pilha antes da próxima queda
+      if (wk.called >= 0 && T >= wk.callEnd && !folder.open) callSheet(-1);
+      var span = WK_SPAN, tau = T - wk.start;
       tau -= Math.floor(tau / WK_CYCLE) * WK_CYCLE;
       var i = Math.min(nW - 1, Math.floor(tau / span)), inStep = tau - i * span;
       var lead = M.ease.inOut(clamp(inStep / WK_STEP, 0, 1));
@@ -1319,24 +1397,27 @@
       onion.run.setAttribute('stroke-dashoffset', (1000 * (1 - lenFrac(u))).toFixed(1));
       onion.run.setAttribute('opacity', (landed ? 0.45 * (1 - clamp((inStep - WK_STEP) / WK_HOLD * 1.6, 0, 1)) : 0.45).toFixed(3));
       placeGhosts(lead, landed ? 1 - clamp((inStep - WK_STEP) * 3, 0, 1) : 1);
-      if (landed) { if (wk.landed !== i) { wk.landed = i; if (!folder.open) bump(); } }
-      else wk.landed = -1;
+      if (landed) { if (wk.landed !== i) { wk.landed = i; focusWork(i); } }
+      else if (wk.landed === i) wk.landed = -1;
     }
-    // a rolagem destaca os projetos da pasta, um depois do outro: a folha da vez sobe
-    // acima do vidro e o nome dela aparece embaixo do título
-    function scrubWorks() {
-      var p = SC.works.p, k = p < 0.06 ? -1 : Math.min(nW - 1, Math.floor((p - 0.06) / 0.84 * nW));
-      if (k === wk.sel) return;
-      wk.sel = k;
-      if (!folder.open) callSheet(k);
-      wk.cur = Math.max(0, k);
+    // ao chegar, a pasta se monta com os arquivos à vista e o destaque recomeça do primeiro trabalho
+    function enterWorks() {
+      wk.start = clock; wk.landed = -1; wk.cur = -1; wk.toss = null; wk.callEnd = 0;
+      callSheet(-1);
+      enterFolders();
+      // sem animação não há sequência: fica o primeiro trabalho em destaque
+      if (!motionOn()) wk.cur = 0;
       renderWork();
     }
-    // embaixo do título: o trabalho da vez, ou a folha sob o mouse
-    function renderWork() {
-      var i = clamp(wk.hover >= 0 ? wk.hover : wk.cur, 0, nW - 1);
+    // embaixo do título: o trabalho da vez, ou a folha sob o mouse (nada antes da primeira queda)
+    var readFlip = $('.works-readout');
+    function renderWork(flip) {
+      var i = wk.hover >= 0 ? wk.hover : wk.cur;
+      if (i < 0) { readCount.textContent = ''; readWork.textContent = ''; return; }
+      i = clamp(i, 0, nW - 1);
       readCount.textContent = pad(i + 1) + ' ' + t('v1.of') + ' ' + pad(nW);
       readWork.textContent = workTitle(i);
+      if (flip && readFlip && motionOn()) { readFlip.classList.remove('is-flip'); void readFlip.offsetWidth; readFlip.classList.add('is-flip'); }
     }
     function renderFolder() {
       var f = folder;
@@ -1364,8 +1445,11 @@
       onion.dot.setAttribute('opacity', '1');
       onion.run.setAttribute('stroke-dashoffset', '0');
       onion.run.setAttribute('opacity', '0.45');
+      if (onion.toss) onion.toss.setAttribute('opacity', '0');
       folder.root.setAttribute('data-entered', '');
-      wk.sel = -2;
+      wk.toss = null;
+      if (wk.cur < 0) wk.cur = 0;
+      renderWork();
     }
 
     /* ---------- 4 · Interação: a curva comanda o fundo ----------
@@ -1390,7 +1474,6 @@
     // COR: a palavra pinta com a cor que a forma da curva dá
     var corEl = $('.cor', playFrame), cor = { h: -1, k: -1 };
     var messNote = $('.note--mess', playFrame);
-    var playWarp = 0;
     var YMIN = -0.3, YMAX = 1.3;
     var MOVE = 1.6, HOLD = 0.6, CYCLE = MOVE + HOLD;
     var pluck = null, bezTw = null, hdrag = null;
@@ -1800,7 +1883,7 @@
           var x = (i + 0.5) / NX, v = 0.05;
           for (var q = 0; q < 3; q++) {
             var P = C.peaks[q];
-            var d = (x - (P[0] + (q % 2 ? -drift : drift) + sway + 0.04 * Math.sin((playWarp * 1.6 + C.ph + q * 0.37) * TAU))) / (P[1] * (1 + 0.24 * Math.sin((playWarp * 1.3 + C.ph * 2 + q * 0.29) * TAU)));
+            var d = (x - (P[0] + (q % 2 ? -drift : drift) + sway + 0.04 * Math.sin((C.ph + q * 0.37) * TAU))) / (P[1] * (1 + 0.24 * Math.sin((C.ph * 2 + q * 0.29) * TAU)));
             v += P[2] * Math.exp(-0.5 * d * d);
           }
           h[Math.round(clamp(toneOut[i], 0, 1) * (NB - 1))] += v;
@@ -1893,14 +1976,14 @@
       var prev = cur;
       cur = key;
       if (prev === 'works') setOpen(false);
-      if (prev === 'design') mon.manual = false;
       // na Interação o cursor-guia entra logo na chegada; depois que alguém mexeu, as alças só vibram
       if (key === 'play') { presetsEl.classList.toggle('is-inviting', !presetKnown && motionOn()); drawNote(messNote); if (ghostKnown || !motionOn()) startPluck(); else ghostNext = performance.now(); }
       if (prev === 'play') { stopGhost(false); presetsEl.classList.remove('is-inviting'); }
       // a pasta se monta a cada chegada, e o ponto recomeça do primeiro trabalho
-      if (key === 'works') { wk.start = clock; enterFolders(); drawNote(openNote); }
+      if (key === 'works') { enterWorks(); drawNote(openNote); }
       // no Design a corrente anda logo depois da chegada
       if (key === 'design' && chain.roll < 0) chain.next = clock + 0.9;
+      if (key === 'design') fmtNext = clock + 1.2;
       // no título a caixinha chama logo depois da chegada
       if (key === 'title') { bx.next = clock + 0.5; bx.calls = 0; }
       if (key === 'close' && cgrid && motionOn()) cgrid.ripple(creditsFrame.clientWidth / 2, creditsFrame.clientHeight / 2, 1.2);
@@ -1915,7 +1998,12 @@
 
     // título: o nome sozinho; rolando, ele sobe e encolhe e os papéis entram por baixo
     function scrubTitle(dt) {
-      var live = motionOn(), sT = live ? smooth01((SC.title.p - 0.02) / 0.1) : (SC.title.p > 0.3 ? 1 : 0);
+      var live = motionOn(), sT = 1;
+      if (tIn.on) {
+        var el = performance.now() - tIn.t0;
+        sT = M.ease.inOut(clamp((el - IN_HOLD) / IN_RUN, 0, 1));
+        if (el >= IN_HOLD + IN_RUN) endIntro();
+      } else if (!tIn.done) sT = 0;
       sCur = live ? sCur + (sT - sCur) * (1 - Math.exp(-dt / 80)) : sT;
       if (Math.abs(sT - sCur) < 0.0004) sCur = sT;
       if (Math.abs(sCur - sLast) > 0.0002 || (sCur !== sLast && (sCur === 0 || sCur === 1))) { sLast = sCur; title.style.setProperty('--s', sCur.toFixed(4)); }
@@ -1926,55 +2014,25 @@
       setInvite();
     }
 
-    // Design: o quadro com a foto segue a rolagem, de 16:9 a 1:1, a 9:16 e de
-    // volta, parando um pouco em cada uma (o caos, ao lado, anda sozinho)
-    var ASPECT = [[0, 16 / 9], [0.12, 16 / 9], [0.32, 1], [0.42, 1], [0.62, 9 / 16], [0.72, 9 / 16], [0.92, 16 / 9]];
-    function aspectAt(p) {
-      for (var i = 1; i < ASPECT.length; i++) {
-        if (p <= ASPECT[i][0]) {
-          var A = ASPECT[i - 1], B = ASPECT[i], u = smooth01((p - A[0]) / (B[0] - A[0]));
-          return Math.exp(lerp(Math.log(A[1]), Math.log(B[1]), u));
-        }
-      }
-      return ASPECT[ASPECT.length - 1][1];
-    }
-    // enquanto a rolagem deforma o quadro, a proporção acende (e um pontinho desce ao lado dela);
-    // vale só o movimento da própria página (o p das cenas é suavizado), então apaga logo que ela para
-    var ratioHot = false, ratioAt = 0, ratioP = -1;
-    function scrubDesign(dt) {
-      var D = SC.design, tnow = performance.now();
-      if (ratioHot && tnow - ratioAt > 140) { ratioHot = false; monitor.classList.remove('is-scrolled'); }
-      if (!D.vis || !motionOn() || mdrag || mon.manual || mon.tw) return;
-      var f = 1 - Math.exp(-dt / 110), a = aspectAt(D.p);
-      var na = Math.exp(lerp(Math.log(mon.a), Math.log(a), f)), nk = mon.k + (1 - mon.k) * f;
-      if (Math.abs(a - na) < 0.0008) na = a;
-      if (Math.abs(1 - nk) < 0.001) nk = 1;
-      if (na === mon.a && nk === mon.k) return;
-      var sy = global.pageYOffset;
-      if (sy !== ratioP && Math.abs(a - mon.a) > 0.002) { ratioAt = tnow; if (!ratioHot) { ratioHot = true; monitor.classList.add('is-scrolled'); } }
-      ratioP = sy;
-      kickBlob(clamp((na - mon.a) * 0.6, -0.08, 0.08));
-      mon.a = na; mon.k = nk;
-      layoutMonitor();
-      syncFormatUi();
-    }
-
-    // dt em ms; v é a velocidade da navegação, em telas por segundo
+    // dt em ms; v é a velocidade da navegação, em telas por segundo (só a luz do título e a
+    // grade do fechamento a usam: o relógio das cenas anda sempre no mesmo passo)
     function tickAll(dt, now, v) {
       var live = motionOn();
-      if (live) clock += (dt / 1000) * (1 + clamp(v * 0.7, 0, 3));
+      if (live) clock += dt / 1000;
       scrubTitle(dt);
       if (SC.title.vis) tickBox(dt);
       tickMon(now);
-      scrubDesign(dt);
-      scrubWorks();
-      // a rolagem pela Interação torce de leve as curvas de cor
-      playWarp += (SC.play.p - playWarp) * (live ? 1 - Math.exp(-dt / 140) : 1);
       if (SC.play.vis) tickCor(dt);
       lightFrame(dt, v);
       if (live) {
         if (SC.title.vis) tickRoles(clock);
-        if (SC.design.vis) { tickCaos(clock); tickWords(clock); tickBlob(dt); designFx(dt, v); }
+        if (SC.design.vis) {
+          tickCaos(clock); tickWords(clock);
+          // o quadro troca de forma sem parar: o movimento é suave e a espera entre
+          // uma forma e outra é curta (menos logo depois de um gesto do visitante)
+          if (!mdrag && !mon.tw && clock >= fmtNext && clock - fmtLock > 6) setFormat((fmt + 1) % FORMATS.length);
+          tickBlob(dt); designFx(dt);
+        }
         if (SC.play.vis) tickTrack(clock);
         if (SC.works.vis) drawOnion(clock);
         if (SC.close.vis) creditsFx(dt, v);
@@ -2002,7 +2060,7 @@
     }
     Site.on('lang', relabel);
     Site.on('motion', function (on) {
-      lightDirty = true; wk.sel = -2; cor.k = -1;
+      lightDirty = true; cor.k = -1;
       if (!on) { caosOrder(true); chain.roll = -1; drawWords(clock); designStatic(); creditsStatic(); staticOnion(); pluck = null; bezTw = null; ghost = null; if (handEl) handEl.style.opacity = '0'; drawCurve(); resetBox(); setRole(0, clock); cells.forEach(function (c) { c.ch = c.want; c.el.textContent = c.ch === ' ' ? ' ' : c.ch; }); }
       else { roleAt = clock; }
     });
@@ -2076,11 +2134,36 @@
 
     // quando a fonte chega, as medidas do nome e da frase são refeitas
     if (doc.fonts && doc.fonts.addEventListener) doc.fonts.addEventListener('loadingdone', function () { refit(); });
-    var fontsReady = (doc.fonts && doc.fonts.ready) ? Promise.race([doc.fonts.ready, new Promise(function (r) { setTimeout(r, 1800); })]) : Promise.resolve();
-    function titleIn() {
+    var fontsReady = (doc.fonts && doc.fonts.ready) ? Promise.race([doc.fonts.ready, new Promise(function (r) { setTimeout(r, 1100); })]) : Promise.resolve();
+    /* ---------- A entrada ----------
+       A página abre no letreiro: o nome ocupa a tela inteira, as letras se revelando
+       uma a uma, e a câmera se aproxima devagar. Ele fica um instante assim e então
+       sobe e encolhe até o lugar dele, trazendo os papéis, a assinatura e a caixinha
+       — essa segunda parada é a página inicial. Qualquer gesto pula para o fim. */
+    var IN_HOLD = 1350, IN_RUN = 1000;
+    var tIn = { t0: 0, on: false, done: false };
+    var skipIntro = ['wheel', 'keydown', 'pointerdown', 'touchstart'];
+    function endIntro() {
+      if (!tIn.on) return;
+      tIn.on = false;
+      tIn.done = true;
+      doc.documentElement.classList.remove('is-opening');
+      skipIntro.forEach(function (ev) { global.removeEventListener(ev, endIntro, true); });
+    }
+    function titleIn(skip) {
+      var live = !skip && motionOn();
+      // a tela do letreiro fecha desde o primeiro quadro (sem o HUD), e a câmera já começa
+      // a se aproximar; as letras se revelam quando a fonte chega
+      if (live) doc.documentElement.classList.add('is-opening');
       fontsReady.then(function () {
         refit();
-        requestAnimationFrame(function () { title.classList.add('is-titled'); });
+        requestAnimationFrame(function () {
+          title.classList.add('is-titled');
+          if (!live) { tIn.done = true; return; }
+          tIn.t0 = performance.now();
+          tIn.on = true;
+          skipIntro.forEach(function (ev) { global.addEventListener(ev, endIntro, true); });
+        });
       });
     }
 
