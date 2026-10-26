@@ -33,18 +33,22 @@ window.SITE = {
 
   // Redes do fechamento. Preencha a url; itens com url vazia aparecem como rascunho.
   socials: [
-    { label: 'Instagram', handle: '@savio_cavalcante1', url: 'https://www.instagram.com/savio_cavalcante1/' },
-    { label: 'LinkedIn', handle: 'Perfil', url: 'https://www.linkedin.com/feed/' },
-    { label: 'Behance', handle: 'sviocavalcante', url: 'https://www.behance.net/sviocavalcante' }
+    { icon: 'instagram', label: 'Instagram', handle: '@savio_cavalcante1', url: 'https://www.instagram.com/savio_cavalcante1/' },
+    { icon: 'linkedin', label: 'LinkedIn', handle: 'Perfil', url: 'https://www.linkedin.com/feed/' },
+    { icon: 'behance', label: 'Behance', handle: 'sviocavalcante', url: 'https://www.behance.net/sviocavalcante' },
+    { icon: 'mail', label: 'E-mail', handle: 'saviopls@gmail.com', url: 'mailto:saviopls@gmail.com' },
+    // cta: vira botão de abrir a conversa (o número entra no link, só com dígitos e o 55 do Brasil)
+    { icon: 'whatsapp', label: 'WhatsApp', handle: '(63) 99204-6247', url: 'https://wa.me/5563992046247', cta: true }
   ],
 
-  // Trabalhos recentes: 3 ou 4 vídeos 16:9.
+  // Trabalhos recentes: 3 ou 4 vídeos 16:9 (capas variadas: azul-marinho, branca, laranja e escura, uma ao lado da outra).
   // file: vídeo principal. fileMobile (opcional): versão 720p para telas pequenas.
   // poster (opcional): imagem mostrada enquanto o vídeo carrega.
   works: [
-    { file: 'videos/trabalho-01.mp4', fileMobile: 'videos/trabalho-01-720.mp4', poster: 'videos/trabalho-01.webp', title: { pt: 'Deviate · identidade visual', en: 'Deviate · visual identity' } },
-    { file: 'videos/trabalho-02.mp4', fileMobile: 'videos/trabalho-02-720.mp4', poster: 'videos/trabalho-02.webp', title: { pt: 'Alê · identidade visual', en: 'Alê · visual identity' } },
-    { file: 'videos/trabalho-03.mp4', fileMobile: 'videos/trabalho-03-720.mp4', poster: 'videos/trabalho-03.webp', title: { pt: 'Anúncios', en: 'Ads' } }
+    { file: 'videos/trabalho-01.mp4', fileMobile: 'videos/trabalho-01-720.mp4', poster: 'videos/trabalho-01.webp', title: { pt: 'Deviate - Conceito e Aplicação', en: 'Deviate - Concept and Application' } },
+    { file: 'videos/trabalho-02.mp4', fileMobile: 'videos/trabalho-02-720.mp4', poster: 'videos/trabalho-02.webp', title: { pt: 'Projeto Alê - Identidade Visual', en: 'Alê Project - Visual Identity' } },
+    { file: 'videos/trabalho-03.mp4', fileMobile: 'videos/trabalho-03-720.mp4', poster: 'videos/trabalho-03.webp', title: { pt: 'Deviate - Campanha de Marketing', en: 'Deviate - Marketing Campaign' } },
+    { file: 'videos/trabalho-04.mp4', fileMobile: 'videos/trabalho-04-720.mp4', poster: 'videos/trabalho-04.webp', title: { pt: 'Facebook / Instagram Ads', en: 'Facebook / Instagram Ads' } }
   ],
 
   // Textos comuns às três versões.

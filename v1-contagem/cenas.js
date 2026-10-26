@@ -64,10 +64,12 @@
       'v1.curve.out': 'Saída',
       'v1.curve.back': 'Elástico',
       'v1.handle': 'Alça {n}: tempo {x}, valor {y}. Use as setas para mover.',
-      'v1.credits': 'Créditos',
-      'v1.end': 'Fim',
+      'v1.credits': 'Contato',
+      'v1.end': 'Contato',
+      'v1.contact': 'Contato',
       'v1.of': 'de',
-      'v1.soon': 'em breve'
+      'v1.soon': 'em breve',
+      'v1.wa': 'Enviar mensagem'
     }, {
       'v1.lead': 'Design, editing, motion and web.',
       'v1.box': 'Click, drag!',
@@ -103,10 +105,12 @@
       'v1.curve.out': 'Ease out',
       'v1.curve.back': 'Elastic',
       'v1.handle': 'Handle {n}: time {x}, value {y}. Use the arrow keys to move it.',
-      'v1.credits': 'Credits',
-      'v1.end': 'End',
+      'v1.credits': 'Contact',
+      'v1.end': 'Contact',
+      'v1.contact': 'Contact',
       'v1.of': 'of',
-      'v1.soon': 'coming soon'
+      'v1.soon': 'coming soon',
+      'v1.wa': 'Send a message'
     });
 
     var t = Site.t;
@@ -167,23 +171,54 @@
       });
     }
 
+    // ícones das redes: marcas em 24×24, na cor do texto
+    var ICONS = {
+      instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="17.1" cy="6.9" r="1.2" fill="currentColor"/>',
+      linkedin: '<path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>',
+      behance: '<path fill="currentColor" d="M6.938 4.503c.702 0 1.34.06 1.92.188.577.13 1.07.33 1.485.61.41.28.733.65.96 1.12.225.47.34 1.05.34 1.73 0 .74-.17 1.36-.507 1.86-.338.5-.837.9-1.502 1.22.906.26 1.576.72 2.022 1.37.448.66.665 1.45.665 2.36 0 .75-.13 1.39-.397 1.92-.267.53-.63.96-1.085 1.29-.456.33-.985.57-1.59.72-.6.16-1.23.24-1.88.24H0V4.51h6.938v-.007zM6.545 9.64c.58 0 1.06-.14 1.44-.42.38-.28.57-.74.57-1.37 0-.35-.07-.64-.2-.86-.13-.22-.31-.4-.53-.52-.22-.12-.48-.2-.77-.25-.29-.04-.6-.06-.92-.06H3.67v3.48h2.875zm.15 5.9c.35 0 .68-.03.99-.1.31-.07.58-.18.8-.34.22-.16.4-.38.54-.65.13-.27.2-.62.2-1.03 0-.82-.23-1.4-.7-1.75-.47-.35-1.08-.52-1.84-.52H3.67v4.39h3.025zM16.5 15.34c.31.3.76.45 1.34.45.42 0 .79-.1 1.09-.32.3-.21.49-.43.56-.65h2.47c-.4 1.22-1 2.1-1.8 2.62-.8.52-1.77.78-2.9.78-.79 0-1.5-.13-2.14-.38-.64-.25-1.17-.6-1.6-1.06-.43-.46-.77-1-1-1.65-.24-.64-.35-1.34-.35-2.1 0-.73.12-1.4.36-2.03.25-.63.59-1.17 1.04-1.62.45-.45.97-.8 1.58-1.05.6-.25 1.28-.38 2-.38.82 0 1.53.16 2.14.48.6.32 1.1.75 1.5 1.28.4.54.68 1.15.86 1.84.17.69.23 1.4.18 2.15h-7.38c.04.87.29 1.5.6 1.8zm2.52-4.4c-.25-.28-.7-.43-1.25-.43-.36 0-.67.07-.9.2-.23.13-.42.3-.55.5-.13.2-.22.4-.27.62-.05.2-.07.4-.08.55h4.5c-.08-.65-.28-1.16-.66-1.44h.01zM15.5 6.5h5.6v1.4h-5.6V6.5z"/>',
+      mail: '<rect x="3" y="5.5" width="18" height="13" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M3.8 7.4l8.2 6.1 8.2-6.1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>',
+      whatsapp: '<path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>'
+    };
+    function iconEl(name) {
+      if (!ICONS[name]) return null;
+      var sv = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      sv.setAttribute('viewBox', '0 0 24 24'); sv.setAttribute('class', 'c-icon');
+      sv.setAttribute('aria-hidden', 'true'); sv.setAttribute('focusable', 'false');
+      sv.innerHTML = ICONS[name];
+      return sv;
+    }
+
     var socialsHost = $('[data-socials]');
     function renderSocials() {
       socialsHost.innerHTML = '';
       S.socials.forEach(function (s) {
         var li = doc.createElement('li');
         var value = s.handle || (s.url ? s.url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '') : t('social.draft'));
-        if (s.url) {
+        var ic = iconEl(s.icon);
+        if (s.url && s.cta) {
+          // botão: abre a conversa direto
+          li.className = 'is-cta';
+          var b = doc.createElement('a');
+          b.className = 'c-cta'; b.href = s.url; b.target = '_blank'; b.rel = 'noopener';
+          b.setAttribute('aria-label', s.label + ': ' + t('v1.wa'));
+          if (ic) b.appendChild(ic);
+          b.insertAdjacentHTML('beforeend', '<span class="c-cta-text"></span>');
+          $('.c-cta-text', b).textContent = t('v1.wa');
+          li.appendChild(b);
+        } else if (s.url) {
           var a = doc.createElement('a');
-          a.href = s.url; a.target = '_blank'; a.rel = 'noopener';
+          a.href = s.url;
+          if (!/^mailto:/.test(s.url)) { a.target = '_blank'; a.rel = 'noopener'; }
           a.innerHTML = '<span class="c-label"></span><span class="c-value"></span>';
           $('.c-label', a).textContent = s.label;
-          $('.c-value', a).textContent = value;
+          if (ic) $('.c-value', a).appendChild(ic);
+          $('.c-value', a).appendChild(doc.createTextNode(value));
           li.appendChild(a);
         } else {
           li.innerHTML = '<span class="c-label"></span><span class="c-value is-draft"></span>';
           $('.c-label', li).textContent = s.label;
-          $('.c-value', li).textContent = value;
+          if (ic) $('.c-value', li).appendChild(ic);
+          $('.c-value', li).appendChild(doc.createTextNode(value));
         }
         socialsHost.appendChild(li);
       });
