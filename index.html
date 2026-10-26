@@ -3,83 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Três versões · Savio Cavalcante</title>
-<meta name="robots" content="noindex">
-<style>
-  :root {
-    --bg: #e6e6e4; --ink: #121211; --ink-2: #4c4b47; --line: #cfcdc6;
-    --c1: #0b0b0a; --c1-fg: #ededea; --c1-acc: #ffa64d;
-    --c2: #f3f3f0; --c2-fg: #101010; --c2-acc: #2446d1;
-    --c3: #ffd100; --c3-fg: #0e0e0d; --c3-acc: #ff4a1c;
-  }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--ink); }
-  body { font: 16px/1.45 ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; padding: clamp(20px, 5vw, 64px) clamp(16px, 5vw, 64px) 48px; }
-  h1 { margin: 0 0 6px; font-size: clamp(26px, 4vw, 40px); font-weight: 650; letter-spacing: -0.02em; }
-  .intro { margin: 0 0 clamp(24px, 4vw, 40px); max-width: 60ch; color: var(--ink-2); }
-  ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-  a.v { display: grid; grid-template-columns: minmax(150px, 34%) 1fr; min-height: 190px; text-decoration: none; color: inherit; border-radius: 10px; overflow: hidden; outline-offset: 4px; }
-  a.v:focus-visible { outline: 3px solid var(--ink); }
-  .swatch { position: relative; display: grid; place-items: center; overflow: hidden; }
-  .swatch b { font-weight: 800; letter-spacing: -0.02em; line-height: 0.85; transition: transform 500ms cubic-bezier(.16,1,.3,1); }
-  a.v:hover .swatch b { transform: scale(1.05); }
-  .info { padding: 24px 28px; background: #f6f6f5; display: flex; flex-direction: column; gap: 6px; justify-content: center; }
-  .info h2 { margin: 0; font-size: 22px; font-weight: 650; letter-spacing: -0.01em; }
-  .info p { margin: 0; color: var(--ink-2); max-width: 58ch; }
-  .info .meta { font-size: 14px; color: var(--ink-2); }
-  .info .go { margin-top: 6px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
-  .s1 { background: var(--c1); color: var(--c1-fg); }
-  .s1 b { font-size: clamp(64px, 9vw, 120px); font-stretch: 75%; }
-  .s1 i { position: absolute; width: 74%; aspect-ratio: 1; border: 2px solid #3a3a37; border-radius: 50%; }
-  .s1 i::after { content: ''; position: absolute; left: 50%; top: 50%; width: 9px; height: 9px; margin: -4.5px; border-radius: 50%; background: var(--c1-acc); }
-  .s2 { background: var(--c2); color: var(--c2-fg); }
-  .s2 b { font-size: clamp(30px, 4vw, 52px); font-weight: 600; letter-spacing: 0.2em; text-align: center; line-height: 1.05; }
-  .s2 b span { color: var(--c2-acc); }
-  .s3 { background: var(--c3); color: var(--c3-fg); }
-  .s3 b { font-size: clamp(54px, 8vw, 104px); font-weight: 900; transform: rotate(-7deg); }
-  .s3 em { position: absolute; left: -10%; right: -10%; bottom: 22%; height: 18%; background: var(--c3-acc); transform: rotate(-7deg); }
-  footer { margin-top: 32px; font-size: 14px; color: var(--ink-2); max-width: 70ch; }
-  @media (max-width: 640px) { a.v { grid-template-columns: 1fr; } .swatch { min-height: 150px; } }
-</style>
+<title>Savio Cavalcante</title>
+<meta http-equiv="refresh" content="0; url=v1-contagem/">
+<link rel="canonical" href="v1-contagem/">
+<style>html{background:#0b0b0a}</style>
+<script>location.replace('v1-contagem/' + location.hash);</script>
 </head>
 <body>
-  <h1>Três versões para escolher</h1>
-  <p class="intro">Mesmo conteúdo, três mundos. Abra cada uma no computador e no celular. Role para seguir a história, arraste para explorar o mapa, aperte M para ver tudo de cima.</p>
-  <ol>
-    <li>
-      <a class="v" href="v1-contagem/">
-        <div class="swatch s1" aria-hidden="true"><i></i><b>5</b></div>
-        <div class="info">
-          <h2>1 · Contagem</h2>
-          <p>O site é a ponta de um filme. Os capítulos contam 1, 2, 3, 4 até o rolo com os seus vídeos, numa página só: cada cena fica presa na tela enquanto a rolagem a conta.</p>
-          <span class="meta">Abertura: o nome com luz em movimento · Objeto: editor de curva de tempo</span>
-          <span class="go">Abrir a versão 1</span>
-        </div>
-      </a>
-    </li>
-    <li>
-      <a class="v" href="v2-concreto/">
-        <div class="swatch s2" aria-hidden="true"><b>S<br>A<br><span>V</span><br>I<br>O</b></div>
-        <div class="info">
-          <h2>2 · Concreto</h2>
-          <p>O mapa é um poema concreto: SAVIO desce e cada capítulo cruza uma letra do nome. Afaste para ler o poema, aproxime para ler o capítulo.</p>
-          <span class="meta">Abertura: as letras caem até formar o nome · Objeto: um bicho de placas articuladas</span>
-          <span class="go">Abrir a versão 2</span>
-        </div>
-      </a>
-    </li>
-    <li>
-      <a class="v" href="v3-cartaz/">
-        <div class="swatch s3" aria-hidden="true"><em></em><b>SAVIO</b></div>
-        <div class="info">
-          <h2>3 · Cartaz</h2>
-          <p>Um muro de cartazes de rua. Tipos de madeira em escala de prédio, cortados pela borda; a palavra mais alta é a porta para cada capítulo.</p>
-          <span class="meta">Abertura: três cortes secos · Objeto: letras de madeira com física</span>
-          <span class="go">Abrir a versão 3</span>
-        </div>
-      </a>
-    </li>
-  </ol>
-  <footer>Esta página serve só para comparar. Depois da escolha, a versão escolhida vira a página inicial do domínio (veja o README).</footer>
+<a href="v1-contagem/">Savio Cavalcante · portfólio</a>
 </body>
 </html>
