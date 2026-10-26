@@ -13,10 +13,13 @@ window.SITE = {
   first: 'Savio',
   last: 'Cavalcante',
 
-  // Caminho da pasta assets a partir de cada versão.
-  assets: '../assets/',
-  logo: 'logo.svg',
+  // Caminho da pasta assets, resolvido a partir deste arquivo (serve à raiz e às versões).
+  assets: document.currentScript ? new URL('../assets/', document.currentScript.src).href : '../assets/',
+  // sem logo.svg na pasta, a marca mostra as iniciais (deixe vazio para não pedir o arquivo)
+  logo: '',
   photo: 'foto.jpg',
+  // a foto do fechamento da versão 1 aparece pequena: uma cópia leve basta
+  photoSmall: 'foto-400.webp',
 
   // Foto dentro da forma fluida do Design (versão 1).
   // focus: o ponto do rosto, em frações da largura e da altura da imagem; fica sempre no centro da forma.
@@ -39,9 +42,9 @@ window.SITE = {
   // file: vídeo principal. fileMobile (opcional): versão 720p para telas pequenas.
   // poster (opcional): imagem mostrada enquanto o vídeo carrega.
   works: [
-    { file: 'videos/trabalho-01.mp4', fileMobile: 'videos/trabalho-01-720.mp4', poster: 'videos/trabalho-01.jpg', title: { pt: 'Deviate · identidade visual', en: 'Deviate · visual identity' } },
-    { file: 'videos/trabalho-02.mp4', fileMobile: 'videos/trabalho-02-720.mp4', poster: 'videos/trabalho-02.jpg', title: { pt: 'Alê · identidade visual', en: 'Alê · visual identity' } },
-    { file: 'videos/trabalho-03.mp4', fileMobile: 'videos/trabalho-03-720.mp4', poster: 'videos/trabalho-03.jpg', title: { pt: 'Anúncios', en: 'Ads' } }
+    { file: 'videos/trabalho-01.mp4', fileMobile: 'videos/trabalho-01-720.mp4', poster: 'videos/trabalho-01.webp', title: { pt: 'Deviate · identidade visual', en: 'Deviate · visual identity' } },
+    { file: 'videos/trabalho-02.mp4', fileMobile: 'videos/trabalho-02-720.mp4', poster: 'videos/trabalho-02.webp', title: { pt: 'Alê · identidade visual', en: 'Alê · visual identity' } },
+    { file: 'videos/trabalho-03.mp4', fileMobile: 'videos/trabalho-03-720.mp4', poster: 'videos/trabalho-03.webp', title: { pt: 'Anúncios', en: 'Ads' } }
   ],
 
   // Textos comuns às três versões.

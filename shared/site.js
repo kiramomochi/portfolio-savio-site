@@ -98,6 +98,9 @@
     if (p && p.catch) p.catch(function () { v._blocked = true; });
   }
 
+  // o pôster só é pedido quando o vídeo se aproxima: não disputa a rede com a abertura
+  function posterOn(v) { if (v._poster && !v.poster) v.poster = v._poster; }
+
   function load(v) {
     if (v._loaded) return;
     v._loaded = true;
@@ -110,18 +113,18 @@
   function ensureObservers() {
     if (nearIO || !('IntersectionObserver' in global)) return;
     nearIO = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { if (e.isIntersecting) load(e.target); });
+      entries.forEach(function (e) { if (e.isIntersecting) { posterOn(e.target); load(e.target); } });
     }, { rootMargin: '75% 75% 75% 75%' });
     playIO = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
         var v = e.target;
         v._visible = e.isIntersecting && e.intersectionRatio > 0.12;
         if (v._visible) {
-          load(v);
+          posterOn(v); load(v);
           if (!videosPaused()) tryPlay(v);
           // o próximo trabalho já começa a carregar, para a passagem ser contínua
           var nx = videos[videos.indexOf(v) + 1];
-          if (nx) { nx.setAttribute('preload', 'auto'); load(nx); }
+          if (nx) { nx.setAttribute('preload', 'auto'); posterOn(nx); load(nx); }
         }
         else if (!v.paused) v.pause();
       });
@@ -145,7 +148,7 @@
     v.setAttribute('disableremoteplayback', '');
     v.setAttribute('aria-hidden', 'true');
     v.tabIndex = -1;
-    if (work.poster) v.poster = S.assets + work.poster;
+    v._poster = work.poster ? S.assets + work.poster : '';
     v._work = work;
     v.addEventListener('error', function () { v._failed = true; wrap.classList.add('is-missing'); }, true);
     v.addEventListener('loadeddata', function () { wrap.classList.add('is-ready'); });
@@ -157,7 +160,7 @@
     wrap.appendChild(ph);
     videos.push(v);
     if (nearIO) { nearIO.observe(v); playIO.observe(v); }
-    else { load(v); v._visible = true; }
+    else { posterOn(v); load(v); v._visible = true; }
     return wrap;
   }
 
@@ -179,6 +182,7 @@
     var i = doc.createElement('img');
     i.alt = alt || '';
     i.decoding = 'async';
+    i.loading = 'lazy';
     i.addEventListener('error', function () { wrap.classList.add('is-missing'); });
     i.addEventListener('load', function () { wrap.classList.add('is-ready'); });
     i.src = S.assets + src;
@@ -191,6 +195,7 @@
     var i = doc.createElement('img');
     i.alt = '';
     i.className = 'mark-img';
+    if (!S.logo) { el.classList.add('is-text'); return; }
     i.addEventListener('error', function () { el.classList.add('is-text'); i.remove(); });
     i.src = S.assets + S.logo;
     el.insertBefore(i, el.firstChild);

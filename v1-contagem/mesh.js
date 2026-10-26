@@ -120,10 +120,15 @@
     offsetX: 0.11, offsetY: -0.19, drift: 0.116, radius: 0.46, timeScale: -0.727
   };
 
-  function create(canvas) {
+  function make(canvas) {
     var gl = null;
-    try { gl = canvas.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'low-power' }); } catch (e) { gl = null; }
+    // sem placa de vídeo (desenho por software) a luz custaria o quadro inteiro: aí o
+    // painel fica com o fundo parado do .no-light
+    try { gl = canvas.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'low-power', failIfMajorPerformanceCaveat: true }); } catch (e) { gl = null; }
     if (!gl) return null;
+    var dbg = gl.getExtension('WEBGL_debug_renderer_info');
+    var gpu = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : '';
+    if (/swiftshader|llvmpipe|softpipe|software|basic render/i.test(gpu)) return null;
 
     function compile(type, src) {
       var s = gl.createShader(type);
@@ -157,11 +162,11 @@
     var time = 0, mx = 0, my = 0, pres = 0, tx = 0, ty = 0, tp = 0;
     var cw = 0, ch = 0;
 
-    function resize(w, h) {
-      var dpr = Math.min(global.devicePixelRatio || 1, 2);
+    function resize(w, h, ratio) {
+      var dpr = Math.min(ratio || 1, 1.25);
       var rw = Math.max(1, Math.round(w * dpr)), rh = Math.max(1, Math.round(h * dpr));
-      // teto de ~1,6 milhão de pixels: a luz é macia, não precisa de mais
-      var k = Math.min(1, Math.sqrt(1600000 / (rw * rh)));
+      // teto de ~1 milhão de pixels: a luz é macia, não precisa de mais
+      var k = Math.min(1, Math.sqrt(1000000 / (rw * rh)));
       rw = Math.max(1, Math.round(rw * k)); rh = Math.max(1, Math.round(rh * k));
       if (rw !== cw || rh !== ch) {
         canvas.width = cw = rw; canvas.height = ch = rh;
@@ -176,18 +181,33 @@
         if (on && tp === 0 && pres < 0.01) { mx = x; my = y; }
         tx = x; ty = y; tp = on ? 1 : 0;
       },
-      // dt em ms; speed acelera a deriva enquanto a câmera anda; dim apaga a luz
-      frame: function (dt, speed, dim, live) {
+      // dt em ms; speed acelera a deriva enquanto a câmera anda
+      step: function (dt, speed, live) {
         var s = dt / 1000;
         if (live) time += s * (1 + speed) * R.timeScale;
         var f = 1 - Math.exp(-9 * s);
         mx += (tx - mx) * f; my += (ty - my) * f; pres += (tp - pres) * f * 0.7;
+      },
+      // dim apaga a luz
+      draw: function (dim) {
         gl.uniform4f(U.u_scene, cw, ch, time, pres);
         gl.uniform4f(U.u_shape, R.scale, R.intensity, dim, R.warp);
         gl.uniform4f(U.u_space, R.offsetX, R.offsetY, mx, my);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
       },
       seek: function (t) { time = t * R.timeScale; }
+    };
+  }
+
+  // sem WebGL (ou com desenho por software) devolve null e o painel fica com o fundo parado
+  function create(canvas, seekT) {
+    var m = make(canvas);
+    if (!m) return null;
+    m.seek(seekT);
+    return {
+      resize: function (cw, ch) { m.resize(cw, ch, global.devicePixelRatio || 1); },
+      pointer: m.pointer,
+      frame: function (dt, speed, dim, live) { m.step(dt, speed, live); m.draw(dim); }
     };
   }
 

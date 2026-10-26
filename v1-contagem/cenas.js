@@ -189,7 +189,7 @@
       });
     }
 
-    $('[data-photo]').appendChild(Site.img(S.photo, S.name));
+    $('[data-photo]').appendChild(Site.img(S.photoSmall || S.photo, S.name));
     Site.mark($('.mark'));
 
     function renderRolesText() {
@@ -1079,7 +1079,7 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       var w = S.works[k];
       if (w && w.poster) {
         s.classList.add('gf-sheet--art');
-        s.innerHTML = '<img class="gf-sheet-art" alt="" draggable="false">';
+        s.innerHTML = '<img class="gf-sheet-art" alt="" draggable="false" loading="lazy" decoding="async">';
         $('img', s).src = S.assets + w.poster;
       } else {
         s.innerHTML = '<span class="gf-ph"></span>';
@@ -1939,21 +1939,9 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
     function dismissHint() { if (hinted) return; hinted = true; hint.classList.add('is-gone'); }
     ['wheel', 'pointerdown', 'keydown', 'scroll', 'touchmove'].forEach(function (ev) { window.addEventListener(ev, function () { if (introDone) dismissHint(); }, { passive: true }); });
 
-    /* ---------- Grão ---------- */
-
-    (function grain() {
-      var c = doc.createElement('canvas'); c.width = c.height = 180;
-      var g = c.getContext('2d');
-      if (!g) return;
-      var img = g.createImageData(180, 180);
-      for (var i = 0; i < img.data.length; i += 4) {
-        var v = Math.random() * 255;
-        img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
-        img.data[i + 3] = 255;
-      }
-      g.putImageData(img, 0, 0);
-      $('.grain').style.backgroundImage = 'url(' + c.toDataURL('image/png') + ')';
-    })();
+    /* ---------- Grão ----------
+       O ruído é um arquivo pronto (assets/grain.png): gerado aqui num canvas, ele custava
+       a abertura nos aparelhos que desenham sem placa de vídeo. */
 
     /* ---------- As cenas e o relógio mestre ----------
        A navegação diz, a cada quadro, quanto de cada cena já passou (p, de 0 a 1)
@@ -2085,10 +2073,10 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
     /* ---------- Luz do título ---------- */
 
     var lightCanvas = $('.title-light');
-    var light = global.MeshLight ? global.MeshLight.create(lightCanvas) : null;
+    // sem a luz (sem WebGL ou desenho por software), o painel fica com o fundo parado
+    var light = global.MeshLight ? global.MeshLight.create(lightCanvas, 14) : null;
     var lightDirty = true, lastDim = -1;
-    if (light) light.seek(14);
-    else title.classList.add('no-light');
+    if (!light) title.classList.add('no-light');
 
     function lightFrame(dt, v) {
       if (!light || !SC.title.vis) return;
@@ -2132,8 +2120,17 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
     setFormat(0, true);
     setRole(0, 0);
 
-    // quando a fonte chega, as medidas do nome e da frase são refeitas
-    if (doc.fonts && doc.fonts.addEventListener) doc.fonts.addEventListener('loadingdone', function () { refit(); });
+    // quando a fonte chega, as medidas do nome e da frase são refeitas: uma vez só, numa
+    // tarefa à parte, por mais avisos que venham juntos
+    var refitPend = 0;
+    function refitSoon() { if (!refitPend) refitPend = setTimeout(function () { refitPend = 0; refit(); }, 0); }
+    if (doc.fonts && doc.fonts.addEventListener) doc.fonts.addEventListener('loadingdone', refitSoon);
+    // o itálico só aparece nos bilhetes, cenas abaixo: carrega depois da página, sem disputar
+    // a rede com o letreiro (carregado antes de entrar no conjunto, não refaz as medidas)
+    if (global.FontFace && doc.fonts) global.addEventListener('load', function () {
+      new FontFace('Archivo', 'url(' + S.assets + 'fonts/archivo-italic-latin.woff2) format("woff2")', { style: 'italic', weight: '300 900', stretch: '62% 125%' })
+        .load().then(function (f) { doc.fonts.add(f); }, function () { /* fica o itálico sintético */ });
+    });
     var fontsReady = (doc.fonts && doc.fonts.ready) ? Promise.race([doc.fonts.ready, new Promise(function (r) { setTimeout(r, 1100); })]) : Promise.resolve();
     /* ---------- A entrada ----------
        A página abre no letreiro: o nome ocupa a tela inteira, as letras se revelando
@@ -2155,8 +2152,10 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       // a tela do letreiro fecha desde o primeiro quadro (sem o HUD), e a câmera já começa
       // a se aproximar; as letras se revelam quando a fonte chega
       if (live) doc.documentElement.classList.add('is-opening');
+      // na revelação basta acertar o nome; o resto da página se remede logo depois
       fontsReady.then(function () {
-        refit();
+        fitName();
+        refitSoon();
         requestAnimationFrame(function () {
           title.classList.add('is-titled');
           if (!live) { tIn.done = true; return; }

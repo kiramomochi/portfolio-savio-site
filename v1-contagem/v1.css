@@ -1,3 +1,8 @@
+/* Archivo servida pelo próprio site: sem a ida e volta ao Google antes do primeiro quadro.
+   O itálico (só dos bilhetes à mão) chega depois do carregamento, pelo cenas.js. */
+@font-face { font-family: 'Archivo'; font-style: normal; font-weight: 300 900; font-stretch: 62% 125%; font-display: swap; src: url('../assets/fonts/archivo-latin.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Archivo'; font-style: normal; font-weight: 300 900; font-stretch: 62% 125%; font-display: swap; src: url('../assets/fonts/archivo-latin-ext.woff2') format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+
 /* Versão 1 · Contagem. Uma página só, contada pela rolagem: primeiro a pele e o
    conteúdo das cenas, depois a rolagem que as prende na tela e as empilha. */
 
@@ -83,13 +88,17 @@ body {
   background: #050505;
   color: var(--light);
 }
+/* o fundo do canvas é um quadro parado da própria luz (assets/luz-*.webp, o instante em que
+   ela começa): aparece no primeiro quadro, antes do script, e o WebGL o cobre ao desenhar.
+   Onde a luz não roda (sem WebGL, desenho por software) ele fica, apagando junto com --s */
 .title-light {
   position: absolute; inset: 0; width: 100%; height: 100%; max-width: none;
+  background: url('../assets/luz-h.webp') center / 100% 100% no-repeat;
   opacity: 0.4; transition: opacity 1400ms var(--ease-out);
 }
+@media (max-aspect-ratio: 1/1) { .title-light { background-image: url('../assets/luz-v.webp'); } }
 .is-titled .title-light { opacity: 1; }
-.no-light .title-light { display: none; }
-.no-light { background: radial-gradient(120% 90% at 30% 35%, #262624 0%, #0c0c0b 55%, #050505 100%); }
+.no-light.is-titled .title-light { opacity: calc(1 - var(--s) * 0.62); }
 .name {
   position: absolute; left: 6cqw; right: 6cqw; top: 50%;
   display: flex; flex-direction: column; align-items: center;
@@ -924,7 +933,7 @@ button.note { all: unset; position: absolute; z-index: 3; display: flex; align-i
 
 .grain {
   position: fixed; inset: -100%; z-index: 40; pointer-events: none;
-  opacity: 0.06; background-repeat: repeat; background-size: 180px 180px;
+  opacity: 0.06; background: url('../assets/grain.png') repeat; background-size: 180px 180px;
   animation: grain 900ms steps(6) infinite;
 }
 @keyframes grain {
