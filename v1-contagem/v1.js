@@ -239,7 +239,7 @@
     if (CH[ci].scene === 'works' && y >= byKey.reels.top - VH * 0.5 && y < byKey.close.top - VH * 0.5) h = 'trabalho-' + (Math.round(pos) + 1);
     if (h !== hashNow) {
       hashNow = h;
-      try { history.replaceState(null, '', '#' + h); } catch (e) { /* file:// */ }
+      try { history.replaceState(null, '', ci === 0 ? location.pathname + location.search : '#' + h); } catch (e) { /* file:// */ }
     }
   }
   $('[data-home]').addEventListener('click', function () { goChapter(0); });
