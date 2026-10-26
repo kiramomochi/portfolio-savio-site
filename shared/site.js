@@ -101,9 +101,14 @@
   // o pôster só é pedido quando o vídeo se aproxima: não disputa a rede com a abertura
   function posterOn(v) { if (v._poster && !v.poster) v.poster = v._poster; }
 
+  // o elemento de vídeo só entra na página quando chega perto: na abertura ele
+  // atrasava o primeiro quadro (o navegador prepara a mídia de cada um)
+  function attach(v) { if (!v.parentNode) v._wrap.insertBefore(v, v._wrap.firstChild); }
+
   function load(v) {
     if (v._loaded) return;
     v._loaded = true;
+    attach(v);
     var w = v._work;
     var file = (smallScreen() && w.fileMobile) ? w.fileMobile : w.file;
     v.src = /^(https?:)?\/\//.test(file) ? file : S.assets + file;
@@ -113,11 +118,11 @@
   function ensureObservers() {
     if (nearIO || !('IntersectionObserver' in global)) return;
     nearIO = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { if (e.isIntersecting) { posterOn(e.target); load(e.target); } });
+      entries.forEach(function (e) { if (e.isIntersecting) { posterOn(e.target._v); load(e.target._v); } });
     }, { rootMargin: '75% 75% 75% 75%' });
     playIO = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
-        var v = e.target;
+        var v = e.target._v;
         v._visible = e.isIntersecting && e.intersectionRatio > 0.12;
         if (v._visible) {
           posterOn(v); load(v);
@@ -156,10 +161,11 @@
     ph.className = 'work-ph';
     ph.innerHTML = '<span class="work-ph-label"><span data-t="video.missing"></span> <code></code></span>';
     ph.querySelector('code').textContent = 'assets/' + work.file;
-    wrap.appendChild(v);
     wrap.appendChild(ph);
+    wrap._v = v; v._wrap = wrap;
     videos.push(v);
-    if (nearIO) { nearIO.observe(v); playIO.observe(v); }
+    // quem é observado é o bloco: o vídeo ainda não está nele
+    if (nearIO) { nearIO.observe(wrap); playIO.observe(wrap); }
     else { posterOn(v); load(v); v._visible = true; }
     return wrap;
   }

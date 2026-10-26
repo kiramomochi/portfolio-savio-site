@@ -120,10 +120,12 @@ body {
   letter-spacing: -0.012em; white-space: nowrap; line-height: 1;
 }
 .name-line .ch { display: inline-block; clip-path: inset(100% 0 -10% 0); }
+/* com script, o nome cru (antes de ser dividido em letras e medido) não aparece */
+.js .frame--title:not(.is-split) .name { visibility: hidden; }
 .roles-static { display: none; font-size: 0.5em; letter-spacing: 0.02em; }
 .motion-off .cells { display: none; }
 .motion-off .roles-static { display: inline; }
-.is-titled .name-line .ch { clip-path: inset(-10% 0 -10% 0); transition: clip-path 760ms var(--ease-out); }
+.is-titled .name-line .ch { clip-path: inset(-10% 0 -10% 0); transition: clip-path 600ms var(--ease-out); }
 
 .title-sub {
   z-index: 1;
@@ -256,7 +258,7 @@ body {
 }
 .sign path { fill: none; stroke: var(--tungsten); stroke-width: 20; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 300ms ease-in; }
 .is-signing .sign svg { opacity: 1; transition-duration: 120ms; }
-.is-signing .sign path { stroke-dashoffset: 0; transition: stroke-dashoffset 1500ms cubic-bezier(0.45, 0, 0.25, 1); }
+.is-signing .sign path { stroke-dashoffset: 0; transition: stroke-dashoffset 1100ms cubic-bezier(0.45, 0, 0.25, 1); }
 /* no retrato as duas linhas ocupam a largura toda: ela assina acima de SAVIO, no canto direito,
    sem tocar nas letras */
 @container (max-aspect-ratio: 1/1) {
@@ -1069,7 +1071,7 @@ html { scrollbar-width: thin; scrollbar-color: #3a3a37 var(--room); }
 
 @keyframes v1-open { from { opacity: 0; transform: scale(1.06); } to { opacity: 1; transform: none; } }
 .is-opening .film > .scene:first-child > .stage > .frame {
-  animation: v1-open 1800ms cubic-bezier(0.16, 1, 0.3, 1) both; transform-origin: 50% 46%;
+  animation: v1-open 1100ms cubic-bezier(0.16, 1, 0.3, 1) both; transform-origin: 50% 46%;
 }
 /* enquanto o letreiro está na tela cheia, nada mais aparece */
 .is-opening .hud, .is-opening .title-hint { opacity: 0; }

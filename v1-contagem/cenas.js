@@ -133,7 +133,7 @@
         '<span class="ph-num" aria-hidden="true">3</span><span class="ph-cap"></span>');
       $('.reel-screen', el).appendChild(media);
       // a janela segue a proporção do arquivo: sem faixas pretas em volta do vídeo
-      var vid = $('video', media);
+      var vid = media._v || $('video', media);
       if (vid) vid.addEventListener('loadedmetadata', function () {
         if (vid.videoWidth && vid.videoHeight) el.style.setProperty('--ar', (vid.videoWidth / vid.videoHeight).toFixed(4));
       });
@@ -233,10 +233,11 @@
         s.className = 'ch';
         s.setAttribute('aria-hidden', 'true');
         s.textContent = c;
-        s.style.transitionDelay = (90 + i * 30) + 'ms';
+        s.style.transitionDelay = (60 + i * 22) + 'ms';
         line.appendChild(s);
       });
     });
+    title.classList.add('is-split');
 
     var measurer = doc.createElement('span');
     measurer.className = 'name-measure';
@@ -2137,7 +2138,7 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
        uma a uma, e a câmera se aproxima devagar. Ele fica um instante assim e então
        sobe e encolhe até o lugar dele, trazendo os papéis, a assinatura e a caixinha
        — essa segunda parada é a página inicial. Qualquer gesto pula para o fim. */
-    var IN_HOLD = 1350, IN_RUN = 1000;
+    var IN_HOLD = 650, IN_RUN = 800;
     var tIn = { t0: 0, on: false, done: false };
     var skipIntro = ['wheel', 'keydown', 'pointerdown', 'touchstart'];
     function endIntro() {
@@ -2156,13 +2157,13 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       fontsReady.then(function () {
         fitName();
         refitSoon();
-        requestAnimationFrame(function () {
-          title.classList.add('is-titled');
-          if (!live) { tIn.done = true; return; }
-          tIn.t0 = performance.now();
-          tIn.on = true;
-          skipIntro.forEach(function (ev) { global.addEventListener(ev, endIntro, true); });
-        });
+        // as letras começam a se revelar já nesta tarefa (sem esperar um quadro): o fitName
+        // acabou de medir o nome, então o ponto de partida da transição está calculado
+        title.classList.add('is-titled');
+        if (!live) { tIn.done = true; return; }
+        tIn.t0 = performance.now();
+        tIn.on = true;
+        skipIntro.forEach(function (ev) { global.addEventListener(ev, endIntro, true); });
       });
     }
 
