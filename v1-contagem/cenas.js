@@ -1810,6 +1810,25 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
     var hoff = { x: 0, y: 0 };
     graphWrap.addEventListener('mousedown', function (e) { e.preventDefault(); });
     ['touchstart', 'touchmove'].forEach(function (ev) { graphWrap.addEventListener(ev, function (e) { if (e.cancelable) e.preventDefault(); }, { passive: false }); });
+    /* com a alça presa ao dedo, a página não rola de jeito nenhum, mesmo quando o dedo sai do
+       quadro: o movimento do dedo é cancelado na página inteira (o Safari nem sempre respeita o
+       touch-action), a inércia de uma rolagem anterior é parada ao pegar a alça e, se o navegador
+       rolar assim mesmo, a página volta para onde estava no mesmo quadro */
+    var hold = null;
+    function holdPage(on) {
+      if (on && !hold) {
+        hold = { y: global.pageYOffset, x: global.pageXOffset };
+        root.classList.add('is-holding');
+        global.scrollTo(hold.x, hold.y);
+      } else if (!on && hold) {
+        hold = null;
+        root.classList.remove('is-holding');
+      }
+    }
+    doc.addEventListener('touchmove', function (e) { if (hold && e.cancelable) e.preventDefault(); }, { passive: false, capture: true });
+    global.addEventListener('scroll', function () {
+      if (hold && (global.pageYOffset !== hold.y || global.pageXOffset !== hold.x)) global.scrollTo(hold.x, hold.y);
+    }, { passive: true });
     graphWrap.addEventListener('pointerdown', function (e) {
       var grip = e.target.closest('.graph-grip, .graph-handle');
       if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -1828,6 +1847,7 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       handles[hdrag].classList.add('is-active');
       if (messNote) messNote.classList.add('is-done');
       drawCurve();
+      if (e.pointerType !== 'mouse') holdPage(true);
       try { graphWrap.setPointerCapture(e.pointerId); } catch (err) { /* ok */ }
       e.preventDefault();
     });
@@ -1836,9 +1856,10 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       var p = svgPoint(e);
       setHandle(hdrag, p.x + hoff.x, 1 - p.y + hoff.y);
     });
-    var endDrag = function () { if (hdrag !== null) handles[hdrag].classList.remove('is-active'); hdrag = null; };
+    var endDrag = function () { if (hdrag !== null) handles[hdrag].classList.remove('is-active'); hdrag = null; holdPage(false); };
     graphWrap.addEventListener('pointerup', endDrag);
     graphWrap.addEventListener('pointercancel', endDrag);
+    graphWrap.addEventListener('lostpointercapture', endDrag);
     handles.forEach(function (h, i) {
       h.addEventListener('keydown', function (e) {
         var st = e.shiftKey ? 0.1 : 0.01;

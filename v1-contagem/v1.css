@@ -647,6 +647,8 @@ body {
   /* o gráfico inteiro segura o toque: mexer na curva nunca rola a página */
   touch-action: none; cursor: default;
 }
+/* enquanto uma alça está presa ao dedo, nem o elástico das bordas da página se mexe */
+html.is-holding, html.is-holding body { overscroll-behavior: none; }
 /* a área de pegar de cada alça, do tamanho de um dedo */
 .graph-grip {
   position: absolute; z-index: 2; width: 44px; height: 44px; margin: -22px 0 0 -22px;
