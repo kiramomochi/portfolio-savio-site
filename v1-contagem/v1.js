@@ -178,7 +178,7 @@
   var CH = [
     // os três primeiros aparecem só pelo número (o nome fica para o leitor de tela)
     { num: '1', key: 'ch.intro', scene: 'title', hash: 'apresentacao', bare: true },
-    { num: '2', key: 'ch.design', scene: 'design', hash: 'design', bare: true },
+    { num: '2', key: 'v1.design.title', scene: 'design', hash: 'design', bare: true },
     { num: '3', key: 'ch.play', scene: 'play', hash: 'interacao', bare: true },
     // os vídeos são parte do capítulo dos trabalhos
     { num: '4', key: 'ch.works', scene: 'works', hash: 'trabalhos' },

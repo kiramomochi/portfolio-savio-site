@@ -32,6 +32,33 @@ window.SITE = {
   },
 
   // Redes do fechamento. Preencha a url; itens com url vazia aparecem como rascunho.
+  // o painel de História: um pouco mais de quem é o Savio, do currículo, só o que é de comunicação
+  // e design (to: null é o trabalho atual). split é a divisão aproximada do trabalho em design,
+  // edição e direção, em porcentagem (a leitura de cada nota)
+  experience: [
+    { from: 2026, to: null, role: { pt: 'Designer Industrial', en: 'Industrial Designer' }, org: 'Indusmarca',
+      text: { pt: 'Marcadores de gado sob medida, usinados em aço inox: o pedido do cliente vira um desenho que respeita espessura, tamanho, ângulo e o uso no animal.',
+              en: "Custom cattle markers machined in stainless steel: each client's request becomes a design that respects thickness, size, angle and use on the animal." },
+      split: [90, 0, 10] },
+    { from: 2024, to: 2026, role: { pt: 'Designer Pleno', en: 'Mid-level Designer' }, org: 'Upgrade · Myshop',
+      text: { pt: 'Liderava a criação de anúncios, campanhas e conteúdo para uma rede de franqueados: peças, copy, planejamento e postagem, levando a estratégia do nicho a outros estados.',
+              en: "Led ads, campaigns and social content for a franchise network: visuals, copy, planning and posting, taking the niche's strategy to other states." },
+      split: [55, 25, 20] },
+    { from: 2021, to: 2023, role: { pt: 'Diretor Criativo e cofundador', en: 'Creative Director, co-founder' }, org: 'Eleva Publicidade',
+      text: { pt: 'Agência própria: negociação, planejamento de campanhas, direção de design e edição e a equipe de filmagem. Conduziu o marketing de uma campanha à prefeitura, do drone à pós-produção.',
+              en: 'Own agency: negotiation, campaign planning, design and editing direction and the film crew. Ran the marketing of a mayoral campaign, from drone shoots to post-production.' },
+      split: [25, 30, 45] },
+    { from: 2020, to: 2021, role: { pt: 'Assessor de Comunicação', en: 'Communications Advisor' }, org: { pt: 'Prefeitura de Palmeirópolis', en: 'Palmeirópolis City Hall' },
+      text: { pt: 'Cobertura da gestão municipal: matérias, reportagens, comunicados oficiais e eventos públicos, e o material informativo de toda a estrutura da cidade.',
+              en: 'Covered the city administration: stories, reports, official statements and public events, plus informational material for every department.' },
+      split: [30, 50, 20] },
+    { from: 2018, to: 2019, role: { pt: 'Fotojornalista e Redator', en: 'Photojournalist and Writer' }, org: 'Mapa da Notícia',
+      text: { pt: 'Jornal regional do sul do Tocantins: fotografia em campo para as matérias e redação das notícias, em revezamento com a equipe.',
+              en: 'Regional newspaper in southern Tocantins: field photography for the stories and news writing, in rotation with the team.' },
+      split: [15, 75, 10] }
+  ],
+  tools: ['Photoshop', 'Illustrator', 'Premiere', 'After Effects', 'Corel Draw', { pt: 'IA generativa', en: 'Generative AI' }],
+
   socials: [
     { icon: 'linkedin', label: 'LinkedIn', handle: 'Perfil', url: 'https://www.linkedin.com/feed/' },
     { icon: 'behance', label: 'Behance', handle: 'sviocavalcante', url: 'https://www.behance.net/sviocavalcante' },

@@ -318,6 +318,122 @@ body {
 
 /* "Design é o que dá forma ao… caos": a palavra é um quadrado de letras do tamanho do título */
 .design-claim { font-size: clamp(20px, min(2.2cqw, 4.4cqh), 32px); line-height: 1.25; margin-top: 0.45em; }
+.design-copy:has(.about) .design-claim {
+  font-size: clamp(14px, min(1.3cqw, 2.6cqh), 17.5px); line-height: 1.45; max-width: 26em; color: var(--ink-3);
+  max-height: 7em; overflow: hidden;
+  transition: max-height 520ms var(--ease-out), opacity 300ms var(--ease-out), margin-top 520ms var(--ease-out);
+}
+/* com um cargo aberto, a frase de apresentação recolhe junto com as ferramentas: o cargo ganha o espaço */
+.design-copy:has(.about.has-open) .design-claim { max-height: 0; opacity: 0; margin-top: 0; }
+/* a frase em dois tons: o que ele é em destaque, numa linha só, e o contexto mais baixo embaixo */
+.design-lead {
+  display: block; margin-bottom: 0.2em;
+  font-size: 1.32em; font-weight: 620; line-height: 1.2; letter-spacing: -0.012em; color: var(--ink);
+}
+.design-copy:has(.about.is-instant) .design-claim { transition: none; }
+
+/* o painel de experiência: rótulos como o "Teste uma curva" da Interação, linhas finas entre
+   os cargos, o período em algarismos de mesma largura; o trabalho atual ganha o tungstênio */
+/* a placa: o mesmo vidro do quadro ao lado, um pouco mais escuro, para o texto não brigar com a malha */
+.about {
+  --pd: clamp(14px, 1.5cqw, 22px);
+  position: relative; margin-top: clamp(14px, 3cqh, 30px); max-width: 30em;
+  padding: calc(var(--pd) * 0.85) var(--pd) calc(var(--pd) * 0.7);
+  font-size: clamp(13px, min(1.08cqw, 2.1cqh), 15.5px);
+  border-radius: 10px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.015) 42%, rgba(255, 255, 255, 0.03) 100%),
+    rgba(9, 9, 10, 0.62);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  backdrop-filter: blur(6px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 30px 60px -30px rgba(0, 0, 0, 0.9);
+}
+.about-label {
+  font-size: 10.5px; font-weight: 640; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);
+  margin-bottom: 0.6em;
+}
+.about-list { list-style: none; margin: 0 0 clamp(10px, 2.2cqh, 20px); padding: 0; transition: margin-bottom 520ms var(--ease-out); }
+.about.has-open .about-list { margin-bottom: 0; }
+.about-list > li { border-top: 1px solid rgba(241, 240, 236, 0.1); }
+.about-row {
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 1.2em; column-gap: 1em; align-items: center;
+  width: 100%; padding: 0.66em 0; text-align: left; color: inherit; font: inherit; cursor: pointer;
+}
+.about-row:focus-visible { outline: 1px solid var(--tungsten); outline-offset: 2px; border-radius: 3px; }
+.about-role { font-weight: 600; color: var(--ink); line-height: 1.25; letter-spacing: -0.005em; transition: color 250ms var(--ease-out); }
+.about-org { grid-column: 1; margin-top: 0.12em; font-size: 0.86em; color: var(--ink-3); line-height: 1.35; letter-spacing: 0.005em; }
+.is-open .about-role { color: #fff; }
+/* o trabalho atual: um ponto de tungstênio antes do cargo */
+.is-now .about-role::before {
+  content: ''; display: inline-block; width: 6px; height: 6px; margin: 0 0.5em 0.12em 0; border-radius: 50%;
+  background: var(--tungsten); vertical-align: middle;
+}
+.about-mark { grid-column: 2; grid-row: 1 / span 2; justify-self: end; width: 0.95em; height: 0.95em; color: var(--ink-3); transition: color 250ms var(--ease-out), transform 420ms var(--ease-out); }
+.about-mark svg { display: block; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.about-row:hover .about-mark { color: var(--ink); }
+.about-row:hover .about-role { color: #fff; }
+/* fechado aponta para baixo (v); aberto, para o lado (‹) */
+.is-open .about-row .about-mark { color: var(--tungsten); transform: rotate(90deg); }
+/* o que o cargo fazia: desce pela grade (0fr → 1fr) */
+.about-more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 520ms var(--ease-out); }
+.about-more-in { min-height: 0; overflow: hidden; }
+.is-open .about-more { grid-template-rows: 1fr; }
+.about-when, .about-text, .about-pie { opacity: 0; transform: translateY(-0.3em); transition: opacity 360ms var(--ease-out), transform 520ms var(--ease-out); }
+.is-open .about-when, .is-open .about-text, .is-open .about-pie { opacity: 1; transform: none; }
+.is-open .about-text { transition-delay: 60ms; }
+.is-open .about-pie { transition-delay: 120ms; }
+.about-when { margin: -0.1em 0 0.5em; font-size: 10.5px; font-weight: 640; color: var(--ink-3); font-variant-numeric: tabular-nums; letter-spacing: 0.12em; text-transform: uppercase; }
+.is-now .about-when { color: var(--tungsten); }
+.about-text { margin: 0 0 1em; font-size: 0.94em; color: var(--ink-2); line-height: 1.55; max-width: 46ch; }
+/* a pizza e a legenda lado a lado; as cores passaram no validador de paleta no fundo escuro */
+.about-pie {
+  --c0: #d6782c; --c1: #4a7ff0; --c2: #199e70;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 1.1em;
+  margin: 0 0 0.9em;
+}
+.about-pie-chart { width: clamp(52px, 4.6em, 72px); height: auto; overflow: visible; }
+/* as cunhas: preenchidas, com um contorno da cor da placa que abre o respiro de 2px entre elas */
+.about-slice {
+  fill: var(--c0); stroke: #141415; stroke-width: 2px; stroke-linejoin: round; vector-effect: non-scaling-stroke;
+  transition: opacity 200ms var(--ease-out);
+}
+.about-slice[data-k="1"] { fill: var(--c1); }
+.about-slice[data-k="2"] { fill: var(--c2); }
+.about-pie-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.18em; }
+.about-pie-item { display: grid; grid-template-columns: 0.62em minmax(0, 1fr) auto; align-items: center; column-gap: 0.55em; transition: opacity 200ms var(--ease-out); }
+.about-pie-sw { width: 0.62em; height: 0.62em; border-radius: 2px; background: var(--c0); }
+.about-pie-item[data-k="1"] .about-pie-sw { background: var(--c1); }
+.about-pie-item[data-k="2"] .about-pie-sw { background: var(--c2); }
+.about-pie-name { color: var(--ink-2); }
+.about-pie-val { color: var(--ink); font-variant-numeric: tabular-nums; font-weight: 600; }
+.about-pie-cap {
+  grid-column: 1 / -1; margin-bottom: 0.7em; padding-top: 0.8em; border-top: 1px solid rgba(241, 240, 236, 0.08);
+  font-size: 10.5px; font-weight: 640; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);
+}
+/* destaque: passar por uma fatia ou pelo nome apaga as outras */
+.about-pie[data-hl="0"] [data-k]:not([data-k="0"]), .about-pie[data-hl="1"] [data-k]:not([data-k="1"]), .about-pie[data-hl="2"] [data-k]:not([data-k="2"]) { opacity: 0.32; }
+/* com um cargo aberto, as ferramentas recolhem */
+.about-kit { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 520ms var(--ease-out), opacity 300ms var(--ease-out); }
+.about-kit > div { min-height: 0; overflow: hidden; }
+/* a linha e o respiro ficam dentro do que recolhe, para a placa fechar justa no último cargo */
+.about-kit .about-label { border-top: 1px solid rgba(241, 240, 236, 0.1); padding-top: 0.75em; }
+.about.has-open .about-kit { grid-template-rows: 0fr; opacity: 0; }
+.about.is-instant .about-more, .about.is-instant .about-kit, .about.is-instant .about-when, .about.is-instant .about-text, .about.is-instant .about-pie, .about.is-instant .about-mark, .about.is-instant .about-slice { transition: none; }
+/* as ferramentas: etiquetas com cara de botão, sem interação (sem hover, sem cursor de mão) */
+.about-tools { list-style: none; margin: 0; padding: 0 0 0.15em; display: flex; flex-wrap: wrap; gap: 0.4em; }
+.about-tools li {
+  padding: 0.3em 0.68em 0.32em; border-radius: 5px; white-space: nowrap;
+  font-size: 0.84em; font-weight: 520; line-height: 1.2; color: var(--ink-2);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  cursor: default; user-select: none;
+}
+.about.is-in .about-list > li, .about.is-in .about-tools { animation: about-in 640ms var(--ease-out) both; animation-delay: calc(160ms + var(--i, 5) * 70ms); }
+@keyframes about-in { from { opacity: 0; transform: translateY(0.6em); } }
+.motion-off .about.is-in .about-list > li, .motion-off .about.is-in .about-tools { animation: none; }
 .caos {
   /* o tamanho final vem do script: a largura do título, limitada pela altura livre */
   --cell: 1.16em;
@@ -757,6 +873,19 @@ html.is-holding, html.is-holding body { overscroll-behavior: none; }
 .graph-guide { stroke: rgba(255, 166, 77, 0.5); stroke-width: 0.004; stroke-dasharray: 0.012 0.014; pointer-events: none; }
 /* "experiência": em destaque no subtítulo, com a cor e o corpo comandados pela curva */
 .exp { display: inline-block; font-weight: 720; color: var(--tungsten); transform-origin: 50% 85%; will-change: transform; }
+/* duas frases, uma por linha */
+.frame--play .play-line { max-width: 30ch; }
+.play-l { display: block; }
+/* "Movimentar": em destaque na tinta clara, com uma onda lenta que atravessa as letras.
+   Sobe pouco (um décimo da letra) e cada letra entra um instante depois da anterior */
+.mov { font-weight: 720; color: #f4f2ec; white-space: nowrap; }
+.mov-ch { display: inline-block; animation: mov-wave 2.6s cubic-bezier(0.45, 0, 0.55, 1) infinite; animation-delay: calc(var(--i) * 0.085s); }
+@keyframes mov-wave {
+  0%, 46%, 100% { transform: translateY(0) rotate(0deg); }
+  18% { transform: translateY(-0.11em) rotate(-2.5deg); }
+  32% { transform: translateY(0.02em) rotate(1deg); }
+}
+.motion-off .mov-ch { animation: none; }
 
 /* COR: a palavra pinta com a cor que a curva dá (o script escreve a cor) */
 .cor {
@@ -983,6 +1112,15 @@ button.note { all: unset; position: absolute; z-index: 3; display: flex; align-i
   .chapter-line { font-size: 18px; }
   .design-claim { font-size: 20px; }
   .chapter-caption { display: none; }
+  /* no celular o painel encolhe para o quadro com a foto caber: os três cargos mais recentes,
+     sem a linha de ferramentas */
+  .design-copy:has(.about) .design-claim { font-size: 15px; max-width: 34ch; }
+  .about { margin-top: 2cqh; font-size: 13px; max-width: none; --pd: 14px; }
+  .about-list { margin-bottom: 0; }
+  .about-list > li:nth-child(n + 4), .about-kit { display: none; }
+  /* aberto um cargo, os outros saem da lista: tocar de novo nele traz a lista de volta */
+  .about.has-open .about-list > li:not(.is-open) { display: none; }
+  .about-row { padding: 0.5em 0; }
 
   .works-copy { left: 6cqw; right: 6cqw; top: calc(var(--mt) + 2.5cqh); max-width: none; }
   .frame--works .chapter-title { font-size: clamp(34px, 11cqw, 64px); }
@@ -1001,6 +1139,19 @@ button.note { all: unset; position: absolute; z-index: 3; display: flex; align-i
 
   .work-ph-label span { display: block; }
   .lead { max-width: 26ch; }
+}
+
+/* telas baixas: o painel de experiência aperta o passo das linhas para o cargo aberto caber */
+@container (max-height: 680px) {
+  .about-row { padding: 0.36em 0; }
+  .about-text { margin-bottom: 0.5em; line-height: 1.4; }
+  .about-pie { margin-bottom: 0.6em; }
+  .about-pie-cap { margin-bottom: 0.4em; padding-top: 0.5em; }
+  .about { --pd: 11px; margin-top: 1.6cqh; }
+  .about-pie-chart { width: 46px; }
+  .about-pie-legend { gap: 0; }
+  .about-when { margin-bottom: 0.25em; }
+  .frame--design .chapter-title { font-size: clamp(34px, min(6.1cqw, 10.5cqh), 96px); }
 }
 
 @container (max-height: 420px) {

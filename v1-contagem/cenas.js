@@ -33,10 +33,17 @@
       'v1.lead': 'Design, edição, motion e web.',
       'v1.box': 'Clique, arraste!',
       'v1.box.zone': 'ARREMESSE',
-      'v1.design.title': 'Design',
+      'v1.design.title': 'História',
       'v1.design.sub': 'E o caos volta a se tornar design!',
       'v1.design.formats': 'Formatos',
       'v1.design.claim': 'É a arte de brincar com o:',
+      'v1.about.lead': 'Designer e produtor audiovisual.',
+      'v1.about.claim': 'Publicidade, campanhas e comunicação desde 2018.',
+      'v1.about.exp': 'Experiência',
+      'v1.about.tools': 'Ferramentas',
+      'v1.about.now': 'atual',
+      'v1.about.split': 'Habilidades Utilizadas',
+      'v1.about.parts': 'Design|Edição|Direção',
       'v1.design.caos': 'caos',
       'v1.design.caosLabel': 'caos: ordenar ou desordenar as letras',
       'v1.design.handle': 'Proporção do quadro. Use as setas para mudar.',
@@ -52,8 +59,10 @@
       'v1.works.watch': 'Ver o vídeo',
       'v1.works.openNote': 'abrir',
       'v1.play.title': 'Colorir é uma dança',
-      'v1.play.line': 'Interagir é o que cria a',
+      'v1.play.line': 'Interagir cria a',
       'v1.play.exp': 'experiência',
+      'v1.play.mov': 'Movimentar',
+      'v1.play.line2': 'dá vida à forma.',
       'v1.play.try': 'Teste uma curva',
       'v1.play.graph': 'Editor de curva de tempo',
       'v1.play.presets': 'Curvas prontas',
@@ -73,10 +82,17 @@
       'v1.lead': 'Design, editing, motion and web.',
       'v1.box': 'Click, drag!',
       'v1.box.zone': 'THROW IT',
-      'v1.design.title': 'Design',
+      'v1.design.title': 'History',
       'v1.design.sub': 'And chaos turns back into design!',
       'v1.design.formats': 'Formats',
       'v1.design.claim': "It's the art of playing with:",
+      'v1.about.lead': 'Designer and audiovisual producer.',
+      'v1.about.claim': 'Advertising, campaigns and communication since 2018.',
+      'v1.about.exp': 'Experience',
+      'v1.about.tools': 'Tools',
+      'v1.about.now': 'now',
+      'v1.about.split': 'Skills Used',
+      'v1.about.parts': 'Design|Editing|Direction',
       'v1.design.caos': 'chaos',
       'v1.design.caosLabel': 'chaos: put the letters in order or scramble them',
       'v1.design.handle': 'Frame proportion. Use the arrow keys to change it.',
@@ -92,8 +108,10 @@
       'v1.works.watch': 'Watch the video',
       'v1.works.openNote': 'open',
       'v1.play.title': 'Coloring is a dance',
-      'v1.play.line': 'Interacting is what creates the',
+      'v1.play.line': 'Interacting creates the',
       'v1.play.exp': 'experience',
+      'v1.play.mov': 'Moving',
+      'v1.play.line2': 'gives life to form.',
       'v1.play.try': 'Try a curve',
       'v1.play.graph': 'Timing curve editor',
       'v1.play.presets': 'Preset curves',
@@ -230,6 +248,23 @@
       $('[data-roles-line]').textContent = roles.join(' · ');
       var st = $('.roles-static');
       if (st) st.textContent = roles.join(' · ');
+      renderMov();
+    }
+    // "Movimentar": cada letra numa caixa própria, para a onda passar por elas uma a uma.
+    // O leitor de tela lê a palavra inteira (no sr-only); as letras ficam escondidas dele.
+    function renderMov() {
+      var m = $('[data-mov]');
+      if (!m) return;
+      $$('.mov-ch', m).forEach(function (c) { c.remove(); });
+      var word = t('v1.play.mov');
+      for (var i = 0; i < word.length; i++) {
+        var c = doc.createElement('span');
+        c.className = 'mov-ch';
+        c.setAttribute('aria-hidden', 'true');
+        c.style.setProperty('--i', i);
+        c.textContent = word[i];
+        m.appendChild(c);
+      }
     }
 
     function pad(n) { return n < 10 ? '0' + n : '' + n; }
@@ -548,7 +583,9 @@
     /* ---------- 2 · Design ---------- */
 
     /* caos: as letras trocam de lugar; ao ordenar, a cor pinta uma letra por vez a partir do c */
-    var caosEl = $('[data-caos]');
+    // o quadrado do caos saiu da página (o painel de experiência ocupa o lugar); o código segue
+    // funcionando num botão solto, para ele poder voltar
+    var caosEl = $('[data-caos]') || doc.createElement('button');
     var caos = { ordered: false, at: -10, shuffles: 0, lockUntil: -1, hover: false, letters: [] };
     function buildCaos() {
       var word = t('v1.design.caos');
@@ -649,6 +686,165 @@
       caos.lockUntil = clock + 6; caos.shuffles = 2;
       if (caos.ordered) caosScramble(); else caosOrder();
     });
+
+    /* o painel de experiência: cargo e empresa, do mais recente ao mais antigo, numa placa de vidro
+       como a do quadro ao lado, e as ferramentas numa linha só. Cada cargo abre (um por vez) e mostra
+       o período, o que fazia (da nota de cada experiência) e uma pizza com a divisão do trabalho em
+       design, edição e direção. Com um cargo aberto, a frase e as ferramentas recolhem para dar espaço. */
+    var aboutEl = $('[data-about]'), aboutOpen = -1;
+    function pick(v) { return typeof v === 'string' ? v : (v[Site.lang()] || v.pt); }
+    function el(tag, cls, text) {
+      var e = doc.createElement(tag);
+      if (cls) e.className = cls;
+      if (text != null) e.textContent = text;
+      return e;
+    }
+    var SVGNS_A = 'http://www.w3.org/2000/svg';
+    function renderAbout() {
+      if (!aboutEl) return;
+      var list = $('.about-list', aboutEl), parts = t('v1.about.parts').split('|');
+      list.innerHTML = '';
+      (S.experience || []).forEach(function (x, i) {
+        var li = el('li', x.to === null ? 'is-now' : '');
+        li.style.setProperty('--i', i);
+        var row = el('button', 'about-row');
+        row.type = 'button';
+        row.id = 'about-r' + i;
+        row.setAttribute('aria-expanded', 'false');
+        row.setAttribute('aria-controls', 'about-m' + i);
+        row.appendChild(el('span', 'about-role', pick(x.role)));
+        row.appendChild(el('span', 'about-org', pick(x.org)));
+        var mark = el('span', 'about-mark');
+        mark.setAttribute('aria-hidden', 'true');
+        mark.innerHTML = '<svg viewBox="0 0 12 12"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>';
+        row.appendChild(mark);
+        var more = el('div', 'about-more');
+        more.id = 'about-m' + i;
+        more.setAttribute('role', 'region');
+        more.setAttribute('aria-labelledby', row.id);
+        var inner = el('div', 'about-more-in');
+        inner.appendChild(el('p', 'about-when', x.from + ' – ' + (x.to === null ? t('v1.about.now') : x.to)));
+        if (x.text) inner.appendChild(el('p', 'about-text', pick(x.text)));
+        if (x.split) inner.appendChild(pie(x.split, parts));
+        more.appendChild(inner);
+        // fechado, o conteúdo sai da ordem de tabulação e do leitor de tela
+        more.inert = true;
+        row.addEventListener('click', function () { setAbout(aboutOpen === i ? -1 : i); });
+        li.appendChild(row);
+        li.appendChild(more);
+        list.appendChild(li);
+      });
+      // as ferramentas viram etiquetas: parecem botões, mas não fazem nada
+      var tools = $('.about-tools', aboutEl);
+      tools.innerHTML = '';
+      (S.tools || []).forEach(function (tool) { tools.appendChild(el('li', '', pick(tool))); });
+      var keep = aboutOpen;
+      aboutOpen = -1;
+      if (keep >= 0) setAbout(keep, true);
+    }
+    // a pizza: cada fatia é uma cunha de verdade (centro, arco, centro), desenhada a partir do topo
+    // no sentido do relógio. O contorno da cor da placa faz o respiro entre elas. Abrindo, o ângulo
+    // varre de 0 a 360° e as cunhas são refeitas a cada quadro, sempre fechadas e nítidas.
+    // A legenda dá nome e porcentagem a cada fatia, então a cor nunca é a única pista.
+    function pieAt(deg) {
+      var r = deg * Math.PI / 180;
+      return (Math.sin(r)).toFixed(4) + ' ' + (-Math.cos(r)).toFixed(4);
+    }
+    function pieWedge(a0, a1) {
+      var sw = a1 - a0;
+      if (sw <= 0.01) return '';
+      if (sw >= 359.99) return 'M0 -1A1 1 0 1 1 0 1A1 1 0 1 1 0 -1Z';
+      return 'M0 0L' + pieAt(a0) + 'A1 1 0 ' + (sw > 180 ? 1 : 0) + ' 1 ' + pieAt(a1) + 'Z';
+    }
+    function pie(split, parts) {
+      var fig = el('figure', 'about-pie');
+      var svg = doc.createElementNS(SVGNS_A, 'svg');
+      svg.setAttribute('viewBox', '-1 -1 2 2');
+      svg.setAttribute('aria-hidden', 'true');
+      svg.setAttribute('class', 'about-pie-chart');
+      var legend = el('ul', 'about-pie-legend'), at = 0, slices = [];
+      var total = split.reduce(function (s, v) { return s + v; }, 0) || 1;
+      split.forEach(function (v, k) {
+        if (v > 0) {
+          var p = doc.createElementNS(SVGNS_A, 'path');
+          p.setAttribute('class', 'about-slice');
+          p.setAttribute('data-k', k);
+          svg.appendChild(p);
+          slices.push({ el: p, a0: at / total * 360, a1: (at + v) / total * 360 });
+        }
+        at += v;
+        var item = el('li', 'about-pie-item');
+        item.setAttribute('data-k', k);
+        item.style.setProperty('--k', k);
+        item.appendChild(el('span', 'about-pie-sw'));
+        item.appendChild(el('span', 'about-pie-name', parts[k]));
+        item.appendChild(el('span', 'about-pie-val', v + '%'));
+        legend.appendChild(item);
+      });
+      function draw(sweep) {
+        slices.forEach(function (s) { s.el.setAttribute('d', pieWedge(s.a0, Math.min(s.a1, sweep))); });
+      }
+      var raf = 0;
+      // abre varrendo (ou inteira, sem animação); fechada, volta ao zero para varrer de novo
+      fig.play = function (animate) {
+        cancelAnimationFrame(raf);
+        if (!animate) { draw(360); return; }
+        draw(0);
+        var t0 = performance.now() + 140, dur = 760;
+        (function step(now) {
+          var k = Math.min(1, Math.max(0, (now - t0) / dur));
+          draw(360 * (1 - Math.pow(1 - k, 3)));
+          if (k < 1) raf = requestAnimationFrame(step);
+        })(performance.now());
+      };
+      fig.reset = function () { cancelAnimationFrame(raf); draw(0); };
+      // passar por uma fatia ou pelo nome dela destaca as duas
+      var hl = function (e) { var t2 = e.target.closest('[data-k]'); fig.setAttribute('data-hl', t2 ? t2.getAttribute('data-k') : ''); };
+      fig.addEventListener('pointerover', hl);
+      fig.addEventListener('pointerleave', function () { fig.removeAttribute('data-hl'); });
+      // o título vem antes da pizza, no mesmo tom dos outros rótulos do painel
+      fig.appendChild(el('figcaption', 'about-pie-cap', t('v1.about.split')));
+      fig.appendChild(svg);
+      fig.appendChild(legend);
+      return fig;
+    }
+    function setAbout(i, instant) {
+      if (!aboutEl) return;
+      aboutOpen = i;
+      aboutEl.classList.toggle('has-open', i >= 0);
+      aboutEl.classList.toggle('is-instant', !!instant || !motionOn());
+      $$('.about-list > li', aboutEl).forEach(function (li, k) {
+        var on = k === i;
+        li.classList.toggle('is-open', on);
+        $('.about-row', li).setAttribute('aria-expanded', on ? 'true' : 'false');
+        $('.about-more', li).inert = !on;
+        var f = $('.about-pie', li);
+        if (f && f.play) { if (on) f.play(!instant && motionOn()); else f.reset(); }
+      });
+      if (instant) requestAnimationFrame(function () { aboutEl.classList.toggle('is-instant', !motionOn()); });
+      // no celular o quadro com a foto fica embaixo do painel: o tamanho dele é refeito
+      // durante a abertura e no fim dela, para ocupar o espaço que o painel deixa
+      relayoutSoon(instant ? 0 : 560);
+    }
+    var relayT = 0, relayEnd = 0;
+    function relayoutSoon(ms) {
+      relayEnd = performance.now() + ms;
+      if (relayT) return;
+      (function step() {
+        layoutMonitor();
+        relayT = performance.now() < relayEnd ? requestAnimationFrame(step) : 0;
+      })();
+    }
+    if (aboutEl) aboutEl.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape' || aboutOpen < 0) return;
+      var row = $('#about-r' + aboutOpen);
+      setAbout(-1);
+      if (row) row.focus();
+    });
+    function aboutIn() {
+      if (!aboutEl || !motionOn()) return;
+      aboutEl.classList.remove('is-in'); void aboutEl.offsetWidth; aboutEl.classList.add('is-in');
+    }
 
     /* o quadro: uma composição que se reorganiza em qualquer proporção */
     var monitor = $('.monitor');
@@ -2025,7 +2221,7 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       if (key === 'works') { enterWorks(); drawNote(openNote); }
       // no Design a corrente anda logo depois da chegada
       if (key === 'design' && chain.roll < 0) chain.next = clock + 0.9;
-      if (key === 'design') fmtNext = clock + 1.2;
+      if (key === 'design') { fmtNext = clock + 1.2; aboutIn(); }
       // no título a caixinha chama logo depois da chegada
       if (key === 'title') { bx.next = clock + 0.5; bx.calls = 0; }
       if (key === 'close' && cgrid && motionOn()) cgrid.ripple(creditsFrame.clientWidth / 2, creditsFrame.clientHeight / 2, 1.2);
@@ -2069,7 +2265,8 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       if (live) {
         if (SC.title.vis) tickRoles(clock);
         if (SC.design.vis) {
-          tickCaos(clock); tickWords(clock);
+          if (caosEl.isConnected) tickCaos(clock);
+          tickWords(clock);
           // o quadro troca de forma sem parar: o movimento é suave e a espera entre
           // uma forma e outra é curta (menos logo depois de um gesto do visitante)
           if (!mdrag && !mon.tw && clock >= fmtNext && clock - fmtLock > 6) setFormat((fmt + 1) % FORMATS.length);
@@ -2093,6 +2290,7 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       syncFormatUi();
       renderReelLabels();
       renderSocials();
+      renderAbout();
       renderRolesText();
       renderHint();
       renderGraph();
@@ -2162,6 +2360,7 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
     renderReelLabels();
     renderFolder();
     renderSocials();
+    renderAbout();
     renderRolesText();
     renderHint();
     renderGraph();
