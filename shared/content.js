@@ -24,7 +24,7 @@ window.SITE = {
   // Foto dentro da forma fluida do Design (versão 1).
   // focus: o ponto do rosto, em frações da largura e da altura da imagem; fica sempre no centro da forma.
   // span: quanto da largura da imagem cabe no diâmetro da forma (menor = mais perto).
-  designPhoto: { file: 'retrato.webp', focus: [0.43, 0.38], span: 0.8 },
+  designPhoto: { file: 'retrato.webp', focus: [0.43, 0.38], span: 0.748 },
 
   roles: {
     pt: ['Designer', 'Editor de vídeo', 'Motion designer', 'Web designer'],

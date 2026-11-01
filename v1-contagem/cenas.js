@@ -62,7 +62,6 @@
       'v1.curve.linear': 'Linear',
       'v1.curve.soft': 'Suave',
       'v1.curve.out': 'Saída',
-      'v1.curve.back': 'Elástico',
       'v1.handle': 'Alça {n}: tempo {x}, valor {y}. Use as setas para mover.',
       'v1.credits': 'Contato',
       'v1.end': 'Contato',
@@ -103,7 +102,6 @@
       'v1.curve.linear': 'Linear',
       'v1.curve.soft': 'Smooth',
       'v1.curve.out': 'Ease out',
-      'v1.curve.back': 'Elastic',
       'v1.handle': 'Handle {n}: time {x}, value {y}. Use the arrow keys to move it.',
       'v1.credits': 'Contact',
       'v1.end': 'Contact',
@@ -1509,7 +1507,7 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
     var rings = $$('.graph-ring', graph);
     var rider = $('.graph-rider', graph);
     var bez = { x1: 0.65, y1: 0, x2: 0.35, y2: 1 };
-    var PRESETS = { linear: [0, 0, 1, 1], soft: [0.65, 0, 0.35, 1], out: [0.16, 1, 0.3, 1], back: [0.3, 1.3, 0.6, 1] };
+    var PRESETS = { linear: [0, 0, 1, 1], soft: [0.65, 0, 0.35, 1], out: [0.16, 1, 0.3, 1] };
     var riderR = 0.026;
     // o rastro da bolinha (cópias atrás dela, como papel de cebola), o halo e as linhas até os eixos
     var trail = $$('.rider-ghost', graph), halo = $('.graph-halo', graph), guideX = $('.guide-x', graph), guideY = $('.guide-y', graph);
@@ -1959,15 +1957,8 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       var g = bgc, amp = BH * (BW < BH ? 0.46 : 0.6);
       g.setTransform(BD, 0, 0, BD, 0, 0);
       g.globalCompositeOperation = 'source-over';
-      if (E.opaque) { g.fillStyle = '#070707'; g.fillRect(0, 0, BW, BH); }
-      else g.clearRect(0, 0, BW, BH);
-      // a grade do medidor
-      g.strokeStyle = 'rgba(255, 255, 255, 0.06)';
-      g.lineWidth = 1;
-      g.beginPath();
-      for (j = 1; j <= 4; j++) { var gyy = Math.round(BH - amp * j / 4) + 0.5; g.moveTo(0, gyy); g.lineTo(BW, gyy); }
-      for (j = 1; j < 4; j++) { var gxx = Math.round(BW * j / 4) + 0.5; g.moveTo(gxx, BH - amp); g.lineTo(gxx, BH); }
-      g.stroke();
+      // o fundo (escuro, com a grade de pontos) é do próprio quadro, no CSS: o canvas só leva os canais
+      g.clearRect(0, 0, BW, BH);
       // os canais somam luz: onde se cruzam viram ciano, magenta, amarelo e branco.
       // A altura vai pela raiz, para os vales não sumirem perto dos picos estourados.
       g.globalCompositeOperation = 'lighter';

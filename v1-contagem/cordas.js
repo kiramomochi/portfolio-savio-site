@@ -12,7 +12,7 @@
   Quem desenha é o relógio da página (frame), não um laço próprio.
 
   Desempenho: o que pesa no canvas é o número de traços, não o de pontos. Todas as
-  cordas de um mesmo brilho e canal saem num traço só (6 no total), e todos os
+  cordas de um mesmo canal saem num traço só (3 no total), e todos os
   pulsos em mais 3. O canvas tem no máximo ~1,2 milhão de pixels; se os quadros
   passarem de ~21 ms, ele perde nitidez e detalhe antes de perder fluidez.
 */
@@ -24,6 +24,8 @@
   var RGBC = ['255, 70, 60', '70, 235, 120', '80, 130, 255'];
   var KEYS = ['x1', 'y1', 'x2', 'y2'];
   var PSEG = 10, MAXQ = 128;
+  // a luz do cursor, do centro à borda do raio
+  var GLOW = [1, 0.95, 0.84, 0.69, 0.53, 0.38, 0.25, 0.15, 0.08, 0.03, 0];
   var BG = '#050505';
 
   // as ondas de pulsos se revezam: a ordem (de cima para baixo, de baixo para cima) e a
@@ -43,7 +45,9 @@
     if (!g) return null;
 
     // qualidade: orçamento de pixels, faixas de brilho e pontos por corda (adapt baixa os três)
-    var budget = 1.2e6, levels = 2, SEG = 36;
+    // todas as cordas com o mesmo brilho: os cantos ficam tão visíveis quanto o resto, e o meio
+    // apaga pelo degradê que vem depois
+    var budget = 1.2e6, levels = 1, SEG = 36;
     var W = 0, H = 0, dpr = 1, NS = 0;
     var x0 = 0, xw = 1, rise = 1, bellW = 1, push = 0, pushR = 1, gap = 1, drift = 0, along = 0;
     var cords = [], byLevel = [], X = [], Y = [];
@@ -81,13 +85,15 @@
       W = w; H = h; dpr = d;
       canvas.width = Math.max(1, Math.round(w * d));
       canvas.height = Math.max(1, Math.round(h * d));
-      x0 = -W * 0.04; xw = W * 1.08;
       rise = H * (W < H ? 0.24 : 0.34);
       // o campo cobre o quadro inteiro: as alças podem afundar ou passar da curva (~35% da
       // subida) e tudo anda na diagonal, então a primeira corda nasce acima do quadro e a
       // última abaixo, com folga, em qualquer coluna
       gap = H * (W < H ? 0.052 : 0.036);
       drift = gap * 1.4; along = W * (W < H ? 0.045 : 0.03);
+      // as pontas das cordas ficam fora do quadro mesmo quando o campo anda de lado
+      var mx = along + drift;
+      x0 = -W * 0.04 - mx; xw = W * 1.08 + 2 * mx;
       var top = -rise * 0.35 - drift - along - gap, bot = H + rise * 1.35 + drift + along + gap;
       var n = Math.min(64, Math.ceil((bot - top) / gap) + 1);
       // com outro número de cordas, a onda em curso e os beliscões apontariam para cordas que não
@@ -281,7 +287,7 @@
       for (l = 0; l < levels; l++) {
         var ids = byLevel[l];
         if (!ids.length) continue;
-        var alpha = (0.12 + 0.1 * (l + 0.5) / levels).toFixed(3);
+        var alpha = '0.18';
         for (chn = 0; chn < 3; chn++) {
           g.strokeStyle = 'rgba(' + RGBC[chn] + ', ' + alpha + ')';
           g.beginPath();
@@ -312,18 +318,17 @@
 
       // a luz do cursor: as cordas perto dele acendem em branco, num traço só com degradê;
       // as que tremem de um beliscão acendem também
-      var reach = Math.max(180, W * 0.2), n = 0;
+      var reach = Math.max(240, W * 0.26), n = 0;
       g.lineWidth = hair;
       if (ptr.p > 0.02) {
         var gr = g.createRadialGradient(ptr.sx, ptr.sy, 0, ptr.sx, ptr.sy, reach);
-        gr.addColorStop(0, 'rgba(255, 255, 255, ' + (0.95 * ptr.p).toFixed(3) + ')');
-        gr.addColorStop(0.4, 'rgba(255, 255, 255, ' + (0.42 * ptr.p).toFixed(3) + ')');
-        gr.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        // queda em curva de sino, sem degrau: a luz se espalha e some aos poucos
+        for (var gs = 0; gs < GLOW.length; gs++) gr.addColorStop(gs / (GLOW.length - 1), 'rgba(255, 255, 255, ' + (GLOW[gs] * 0.92 * ptr.p).toFixed(3) + ')');
         g.strokeStyle = gr;
         g.beginPath();
         for (k = 0; k < NS; k++) {
           if (Math.abs(cords[k].cy - ptr.sy) > reach + push) continue;
-          tracePart(k, ptr.sx - reach, ptr.sx + reach); n++;
+          tracePart(k, -1e9, 1e9); n++;
         }
         // o mesmo traço duas vezes: na mistura aditiva, as linhas perto do cursor chegam ao branco
         if (n) { g.stroke(); g.stroke(); }
