@@ -33,7 +33,6 @@ window.SITE = {
 
   // Redes do fechamento. Preencha a url; itens com url vazia aparecem como rascunho.
   socials: [
-    { icon: 'instagram', label: 'Instagram', handle: '@savio_cavalcante1', url: 'https://www.instagram.com/savio_cavalcante1/' },
     { icon: 'linkedin', label: 'LinkedIn', handle: 'Perfil', url: 'https://www.linkedin.com/feed/' },
     { icon: 'behance', label: 'Behance', handle: 'sviocavalcante', url: 'https://www.behance.net/sviocavalcante' },
     { icon: 'mail', label: 'E-mail', handle: 'saviopls@gmail.com', url: 'mailto:saviopls@gmail.com' },

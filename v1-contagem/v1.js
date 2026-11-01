@@ -248,6 +248,8 @@
 
   var last = 0, lastY = -1, speed = 0;
   function tick(now) {
+    // o próximo quadro é pedido antes de tudo: um erro numa cena não para a página inteira
+    requestAnimationFrame(tick);
     var dt = Math.min(64, now - (last || now));
     last = now;
     var y = window.scrollY || window.pageYOffset || 0;
@@ -267,7 +269,6 @@
     C.current(focus === 'reels' ? 'reel' + Math.round(pos) : focus);
     C.frame(dt, now, speed);
     updateHud(y);
-    requestAnimationFrame(tick);
   }
 
   /* ---------- Início ---------- */

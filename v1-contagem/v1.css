@@ -88,17 +88,12 @@ body {
   background: #050505;
   color: var(--light);
 }
-/* o fundo do canvas é um quadro parado da própria luz (assets/luz-*.webp, o instante em que
-   ela começa): aparece no primeiro quadro, antes do script, e o WebGL o cobre ao desenhar.
-   Onde a luz não roda (sem WebGL, desenho por software) ele fica, apagando junto com --s */
+/* as cordas de luz acendem com o letreiro (o apagar da segunda parada é feito no próprio desenho) */
 .title-light {
   position: absolute; inset: 0; width: 100%; height: 100%; max-width: none;
-  background: url('../assets/luz-h.webp') center / 100% 100% no-repeat;
-  opacity: 0.4; transition: opacity 1400ms var(--ease-out);
+  opacity: 0; transition: opacity 1400ms var(--ease-out);
 }
-@media (max-aspect-ratio: 1/1) { .title-light { background-image: url('../assets/luz-v.webp'); } }
 .is-titled .title-light { opacity: 1; }
-.no-light.is-titled .title-light { opacity: calc(1 - var(--s) * 0.62); }
 .name {
   position: absolute; left: 6cqw; right: 6cqw; top: 50%;
   display: flex; flex-direction: column; align-items: center;
@@ -142,11 +137,23 @@ body {
   letter-spacing: 0.01em;
 }
 .cells { display: inline-flex; }
-.cell { display: inline-block; width: 0.66em; text-align: center; }
-.cell.is-flip { animation: cell-flip 260ms var(--ease-out); }
+.cell { position: relative; display: inline-block; width: 0.66em; text-align: center; }
+/* cada letra cai na célula como antes, mas chega desfocada e acesa: a luz se apaga
+   enquanto ela ganha foco; a letra que sai desce um pouco e some no desfoque */
+.cell-in { display: inline-block; }
+.cell.is-flip .cell-in { animation: cell-flip 420ms var(--ease-out); }
+.cell.is-flip::after {
+  content: attr(data-old); position: absolute; inset: 0; pointer-events: none;
+  animation: cell-out 340ms var(--ease-out) forwards;
+}
 @keyframes cell-flip {
-  0% { transform: translateY(-0.28em); opacity: 0; }
-  100% { transform: none; opacity: 1; }
+  0% { transform: translateY(-0.28em); opacity: 0; filter: blur(4px); text-shadow: 0 0 0.4em rgba(255, 238, 218, 0.45); }
+  35% { opacity: 1; filter: blur(0.8px); text-shadow: 0 0 0.3em rgba(255, 238, 218, 0.3); }
+  100% { transform: none; opacity: 1; filter: blur(0); text-shadow: 0 0 0 rgba(255, 238, 218, 0); }
+}
+@keyframes cell-out {
+  0% { transform: none; opacity: 0.85; filter: blur(0); }
+  100% { transform: translateY(0.22em); opacity: 0; filter: blur(5px); }
 }
 .lead {
   margin: 0.8em auto 0; max-width: 34ch;
@@ -1006,7 +1013,8 @@ button.note { all: unset; position: absolute; z-index: 3; display: flex; align-i
 /* ---------- Movimento desligado ---------- */
 
 .motion-off .grain { animation: none; }
-.motion-off .cell.is-flip { animation: none; }
+.motion-off .cell.is-flip .cell-in { animation: none; }
+.motion-off .cell.is-flip::after { content: none; }
 .motion-off .monitor, .motion-off .monitor > span, .motion-off .caos-l, .motion-off .caos-l::after { transition: none; }
 .motion-off .is-titled .name-line .ch { transition: none; }
 .motion-off .title-box.is-cue::after, .motion-off .title-box.is-call, .motion-off .title-box.is-back, .motion-off .title-tint , .motion-off .presets button::after , .motion-off .onion-splash, .motion-off .works-readout span  { animation: none; }

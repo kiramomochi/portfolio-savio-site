@@ -173,7 +173,6 @@
 
     // ícones das redes: marcas em 24×24, na cor do texto
     var ICONS = {
-      instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="17.1" cy="6.9" r="1.2" fill="currentColor"/>',
       linkedin: '<path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>',
       behance: '<path fill="currentColor" d="M6.938 4.503c.702 0 1.34.06 1.92.188.577.13 1.07.33 1.485.61.41.28.733.65.96 1.12.225.47.34 1.05.34 1.73 0 .74-.17 1.36-.507 1.86-.338.5-.837.9-1.502 1.22.906.26 1.576.72 2.022 1.37.448.66.665 1.45.665 2.36 0 .75-.13 1.39-.397 1.92-.267.53-.63.96-1.085 1.29-.456.33-.985.57-1.59.72-.6.16-1.23.24-1.88.24H0V4.51h6.938v-.007zM6.545 9.64c.58 0 1.06-.14 1.44-.42.38-.28.57-.74.57-1.37 0-.35-.07-.64-.2-.86-.13-.22-.31-.4-.53-.52-.22-.12-.48-.2-.77-.25-.29-.04-.6-.06-.92-.06H3.67v3.48h2.875zm.15 5.9c.35 0 .68-.03.99-.1.31-.07.58-.18.8-.34.22-.16.4-.38.54-.65.13-.27.2-.62.2-1.03 0-.82-.23-1.4-.7-1.75-.47-.35-1.08-.52-1.84-.52H3.67v4.39h3.025zM16.5 15.34c.31.3.76.45 1.34.45.42 0 .79-.1 1.09-.32.3-.21.49-.43.56-.65h2.47c-.4 1.22-1 2.1-1.8 2.62-.8.52-1.77.78-2.9.78-.79 0-1.5-.13-2.14-.38-.64-.25-1.17-.6-1.6-1.06-.43-.46-.77-1-1-1.65-.24-.64-.35-1.34-.35-2.1 0-.73.12-1.4.36-2.03.25-.63.59-1.17 1.04-1.62.45-.45.97-.8 1.58-1.05.6-.25 1.28-.38 2-.38.82 0 1.53.16 2.14.48.6.32 1.1.75 1.5 1.28.4.54.68 1.15.86 1.84.17.69.23 1.4.18 2.15h-7.38c.04.87.29 1.5.6 1.8zm2.52-4.4c-.25-.28-.7-.43-1.25-.43-.36 0-.67.07-.9.2-.23.13-.42.3-.55.5-.13.2-.22.4-.27.62-.05.2-.07.4-.08.55h4.5c-.08-.65-.28-1.16-.66-1.44h.01zM15.5 6.5h5.6v1.4h-5.6V6.5z"/>',
       mail: '<rect x="3" y="5.5" width="18" height="13" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M3.8 7.4l8.2 6.1 8.2-6.1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -322,8 +321,15 @@
       if (T - roleAt > 2.6) { roleIdx++; setRole(roleIdx, T); }
       cells.forEach(function (c) {
         if (c.ch !== c.want && T >= c.at) {
+          // a letra que sai fica num rastro (::after) que se apaga desfocando enquanto a nova cai
+          c.el.setAttribute('data-old', c.ch === ' ' ? '' : c.ch);
           c.ch = c.want;
-          c.el.textContent = c.ch === ' ' ? ' ' : c.ch;
+          // a letra nova fica numa caixa própria: o rastro da que sai não herda a queda dela
+          var inner = doc.createElement('span');
+          inner.className = 'cell-in';
+          inner.textContent = c.ch === ' ' ? ' ' : c.ch;
+          c.el.textContent = '';
+          c.el.appendChild(inner);
           c.el.classList.remove('is-flip');
           void c.el.offsetWidth;
           c.el.classList.add('is-flip');
@@ -2129,30 +2135,26 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
 
     /* ---------- Luz do título ---------- */
 
+    // cordas de luz (cordas.js): o cursor afasta as cordas e curva a onda, o clique as belisca;
+    // na segunda parada elas apagam um pouco, para o texto ler
     var lightCanvas = $('.title-light');
-    // sem a luz (sem WebGL ou desenho por software), o painel fica com o fundo parado
-    var light = global.MeshLight ? global.MeshLight.create(lightCanvas, 14) : null;
-    var lightDirty = true, lastDim = -1;
+    var light = global.LightCords ? global.LightCords.create(lightCanvas) : null;
+    var lightDirty = true;
     if (!light) title.classList.add('no-light');
 
     function lightFrame(dt, v) {
       if (!light || !SC.title.vis) return;
       var live = motionOn();
-      var dim = sCur * 0.62;
-      if (!live && !lightDirty && Math.abs(dim - lastDim) < 0.002) return;
-      lightDirty = false; lastDim = dim;
-      var on = false, x = 0, y = 0;
-      if (live && ptr.on && !E.overview()) {
-        var r = lightCanvas.getBoundingClientRect();
-        if (r.width > 0) {
-          x = (ptr.x - r.left) / r.width * 2 - 1;
-          y = -((ptr.y - r.top) / r.height * 2 - 1);
-          on = x > -1 && x < 1 && y > -1 && y < 1;
-        }
-      }
-      light.pointer(x, y, on);
-      light.frame(dt, live ? clamp(v * 1.4, 0, 3) : 0, dim, live);
+      if (lightDirty) { lightDirty = false; light.touch(); }
+      var p = live && ptr.on && !E.overview() ? toLocal(title, ptr.x, ptr.y) : null;
+      light.pointer(p ? p.x : 0, p ? p.y : 0, !!(p && p.inside));
+      light.frame(dt, live ? v : 0, sCur * 0.25, live);
     }
+    title.addEventListener('pointerdown', function (e) {
+      if (!light || !motionOn() || E.overview() || e.target.closest('.title-box')) return;
+      var p = toLocal(title, e.clientX, e.clientY);
+      light.pluck(p.x, p.y);
+    });
 
     // a varredura da ponta de filme, no espaço dos vídeos que ainda não chegaram
     function wedge(frac) {
