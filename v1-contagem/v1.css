@@ -323,8 +323,6 @@ body {
   max-height: 7em; overflow: hidden;
   transition: max-height 520ms var(--ease-out), opacity 300ms var(--ease-out), margin-top 520ms var(--ease-out);
 }
-/* com um cargo aberto, a frase de apresentação recolhe junto com as ferramentas: o cargo ganha o espaço */
-.design-copy:has(.about.has-open) .design-claim { max-height: 0; opacity: 0; margin-top: 0; }
 /* a frase em dois tons: o que ele é em destaque, numa linha só, e o contexto mais baixo embaixo */
 .design-lead {
   display: block; margin-bottom: 0.2em;
@@ -356,14 +354,13 @@ body {
   margin-bottom: 0.6em;
 }
 .about-list { list-style: none; margin: 0 0 clamp(10px, 2.2cqh, 20px); padding: 0; transition: margin-bottom 520ms var(--ease-out); }
-.about.has-open .about-list { margin-bottom: 0; }
 .about-list > li { border-top: 1px solid rgba(241, 240, 236, 0.1); }
 .about-row {
   position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 1.2em; column-gap: 1em; align-items: center;
-  width: 100%; padding: 0.66em 0; text-align: left; color: inherit; font: inherit; cursor: pointer;
+  width: 100%; padding: 0.95em 0; text-align: left; color: inherit; font: inherit; cursor: pointer;
 }
 .about-row:focus-visible { outline: 1px solid var(--tungsten); outline-offset: 2px; border-radius: 3px; }
-.about-role { font-weight: 600; color: var(--ink); line-height: 1.25; letter-spacing: -0.005em; transition: color 250ms var(--ease-out); }
+.about-role { font-size: 1.08em; font-weight: 600; color: var(--ink); line-height: 1.25; letter-spacing: -0.005em; transition: color 250ms var(--ease-out); }
 .about-org { grid-column: 1; margin-top: 0.12em; font-size: 0.86em; color: var(--ink-3); line-height: 1.35; letter-spacing: 0.005em; }
 .is-open .about-role { color: #fff; }
 /* o trabalho atual: um ponto de tungstênio antes do cargo */
@@ -420,7 +417,6 @@ body {
 .about-kit > div { min-height: 0; overflow: hidden; }
 /* a linha e o respiro ficam dentro do que recolhe, para a placa fechar justa no último cargo */
 .about-kit .about-label { border-top: 1px solid rgba(241, 240, 236, 0.1); padding-top: 0.75em; }
-.about.has-open .about-kit { grid-template-rows: 0fr; opacity: 0; }
 .about.is-instant .about-more, .about.is-instant .about-kit, .about.is-instant .about-when, .about.is-instant .about-text, .about.is-instant .about-pie, .about.is-instant .about-mark, .about.is-instant .about-slice { transition: none; }
 /* as ferramentas: etiquetas com cara de botão, sem interação (sem hover, sem cursor de mão) */
 .about-tools { list-style: none; margin: 0; padding: 0 0 0.15em; display: flex; flex-wrap: wrap; gap: 0.4em; }
@@ -1117,9 +1113,11 @@ button.note { all: unset; position: absolute; z-index: 3; display: flex; align-i
   .design-copy:has(.about) .design-claim { font-size: 15px; max-width: 34ch; }
   .about { margin-top: 2cqh; font-size: 13px; max-width: none; --pd: 14px; }
   .about-list { margin-bottom: 0; }
-  .about-list > li:nth-child(n + 4), .about-kit { display: none; }
+  .about-kit { display: none; }
   /* aberto um cargo, os outros saem da lista: tocar de novo nele traz a lista de volta */
   .about.has-open .about-list > li:not(.is-open) { display: none; }
+  /* e a frase de apresentação recolhe, para a foto embaixo não encolher demais */
+  .design-copy:has(.about.has-open) .design-claim { max-height: 0; opacity: 0; margin-top: 0; }
   .about-row { padding: 0.5em 0; }
 
   .works-copy { left: 6cqw; right: 6cqw; top: calc(var(--mt) + 2.5cqh); max-width: none; }
@@ -1143,7 +1141,10 @@ button.note { all: unset; position: absolute; z-index: 3; display: flex; align-i
 
 /* telas baixas: o painel de experiência aperta o passo das linhas para o cargo aberto caber */
 @container (max-height: 680px) {
-  .about-row { padding: 0.36em 0; }
+  .about-row { padding: 0.55em 0; }
+  /* aqui um cargo aberto recolhe as ferramentas, para caber inteiro */
+  .about.has-open .about-kit { grid-template-rows: 0fr; opacity: 0; }
+  .about.has-open .about-list { margin-bottom: 0; }
   .about-text { margin-bottom: 0.5em; line-height: 1.4; }
   .about-pie { margin-bottom: 0.6em; }
   .about-pie-cap { margin-bottom: 0.4em; padding-top: 0.5em; }

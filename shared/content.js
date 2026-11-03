@@ -47,15 +47,7 @@ window.SITE = {
     { from: 2021, to: 2023, role: { pt: 'Diretor Criativo e cofundador', en: 'Creative Director, co-founder' }, org: 'Eleva Publicidade',
       text: { pt: 'Agência própria: negociação, planejamento de campanhas, direção de design e edição e a equipe de filmagem. Conduziu o marketing de uma campanha à prefeitura, do drone à pós-produção.',
               en: 'Own agency: negotiation, campaign planning, design and editing direction and the film crew. Ran the marketing of a mayoral campaign, from drone shoots to post-production.' },
-      split: [25, 30, 45] },
-    { from: 2020, to: 2021, role: { pt: 'Assessor de Comunicação', en: 'Communications Advisor' }, org: { pt: 'Prefeitura de Palmeirópolis', en: 'Palmeirópolis City Hall' },
-      text: { pt: 'Cobertura da gestão municipal: matérias, reportagens, comunicados oficiais e eventos públicos, e o material informativo de toda a estrutura da cidade.',
-              en: 'Covered the city administration: stories, reports, official statements and public events, plus informational material for every department.' },
-      split: [30, 50, 20] },
-    { from: 2018, to: 2019, role: { pt: 'Fotojornalista e Redator', en: 'Photojournalist and Writer' }, org: 'Mapa da Notícia',
-      text: { pt: 'Jornal regional do sul do Tocantins: fotografia em campo para as matérias e redação das notícias, em revezamento com a equipe.',
-              en: 'Regional newspaper in southern Tocantins: field photography for the stories and news writing, in rotation with the team.' },
-      split: [15, 75, 10] }
+      split: [25, 30, 45] }
   ],
   tools: ['Photoshop', 'Illustrator', 'Premiere', 'After Effects', 'Corel Draw', { pt: 'IA generativa', en: 'Generative AI' }],
 
