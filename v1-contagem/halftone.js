@@ -13,7 +13,12 @@
 
   opts (tudo opcional):
     bg, ink, hot   cores do fundo, da tinta e do calor ("#rrggbb")
+    paper, paperInk, paperHot   as mesmas três dentro do recorte (cut)
     font, weight   família e peso do título
+
+  O recorte (cut) é um pedaço do quadro embaixo de uma borda, y(x), em que a retícula se
+  inverte: papel claro com pontos escuros. Um ponto que cai em cima da borda sai metade de
+  cada lado, cortado por ela.
 */
 (function (global) {
   'use strict';
@@ -34,8 +39,12 @@
     if (!g) return null;
     var o = opts || {};
     var BG = hex(o.bg || '#070707'), INK = hex(o.ink || '#f1f0ec'), HOT = hex(o.hot || '#ffa64d');
+    var BG2 = hex(o.paper || '#eeede8'), INK2 = hex(o.paperInk || '#0b0b0b'), HOT2 = hex(o.paperHot || '#d2681b');
     var FONT = o.font || 'Archivo', WEIGHT = o.weight || 760;
     var base = document.createElement('canvas'), bx = base.getContext('2d');
+    // a mesma camada de repouso em papel, só desenhada quando há recorte
+    var base2 = null, b2x = null;
+    var cutYs = null, cutIn = null, cutOut = null;
     var meas = document.createElement('canvas').getContext('2d');
 
     var W = 0, H = 0, dpr = 1, G = 9, cols = 0, rows = 0, ox = 0, oy = 0, N = 0;
@@ -44,24 +53,26 @@
     var HX, HY, X, Y, VX, VY, R0, B0, E, GR, GV, TR, FL, act, inAct, nAct = 0;
     // o que sai no quadro: posição, raio e cor de cada ponto fora do lugar
     var DX, DY, DR, DQ, ORD, cnt = new Int32Array(NB * NW + 1);
-    var COL = [], bgStr = 'rgb(' + BG.join(',') + ')';
+    var COL = [], COL2 = [], bgStr = 'rgb(' + BG.join(',') + ')', bg2Str = 'rgb(' + BG2.join(',') + ')';
     var title = null, pool = null, needBuild = true, dirty = true, changed = false;
     var rings = [], flyers = [], time = 0, acc = 0;
     var head = { on: false, was: false, x: 0, y: 0, px: 0, py: 0 };
     var ptr = { on: false, x: 0, y: 0 };
     var rP = 80, rC = 26, rSw = 4, warmD = 28;
 
-    (function () {
+    function palette(out, BG, INK, HOT) {
       for (var qb = 0; qb < NB; qb++) {
         var b = Math.pow(qb / (NB - 1), GAMMA);
         for (var qw = 0; qw < NW; qw++) {
           var w = qw / (NW - 1), c = [0, 1, 2].map(function (k) {
             return Math.round(BG[k] + (INK[k] + (HOT[k] - INK[k]) * w - BG[k]) * b);
           });
-          COL[qb * NW + qw] = 'rgb(' + c.join(',') + ')';
+          out[qb * NW + qw] = 'rgb(' + c.join(',') + ')';
         }
       }
-    })();
+    }
+    palette(COL, BG, INK, HOT);
+    palette(COL2, BG2, INK2, HOT2);
     function qOf(b, w) {
       return Math.round(Math.pow(clamp(b, 0, 1), 1 / GAMMA) * (NB - 1)) * NW + Math.round(clamp(w, 0, 1) * (NW - 1));
     }
@@ -181,20 +192,46 @@
 
     // a camada de repouso: o fundo e cada ponto no lugar, separados por cor
     function drawBase() {
-      base.width = canvas.width; base.height = canvas.height;
-      bx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      bx.fillStyle = bgStr;
-      bx.fillRect(0, 0, W, H);
       var m = 0;
       for (var n = 0; n < N; n++) {
         if (R0[n] < 0.2) continue;
         DX[m] = HX[n]; DY[m] = HY[n]; DR[m] = R0[n]; DQ[m] = qOf(B0[n], 0); m++;
       }
-      paint(bx, m);
+      base.width = canvas.width; base.height = canvas.height;
+      bx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      bx.fillStyle = bgStr;
+      bx.fillRect(0, 0, W, H);
+      paint(bx, m, COL);
+      if (!base2) return;
+      base2.width = canvas.width; base2.height = canvas.height;
+      b2x.setTransform(dpr, 0, 0, dpr, 0, 0);
+      b2x.fillStyle = bg2Str;
+      b2x.fillRect(0, 0, W, H);
+      paint(b2x, m, COL2);
+    }
+
+    /* a borda do recorte: ys[i] é a altura dela em x = i * w / (ys.length - 1), em px do
+       quadro (w é a largura com que ys foi feito); embaixo dela é papel. null tira o recorte */
+    function setCut(ys, w) {
+      cutYs = ys && ys.length > 1 ? ys : null;
+      dirty = true;
+      if (!cutYs) { cutIn = cutOut = null; return; }
+      if (!base2) { base2 = document.createElement('canvas'); b2x = base2.getContext('2d'); needBuild = true; }
+      var K = cutYs.length - 1, ww = w || W, p = new Path2D();
+      p.moveTo(-4, cutYs[0]);
+      for (var i = 0; i <= K; i++) p.lineTo(i * ww / K, cutYs[i]);
+      p.lineTo(ww + 4, cutYs[K]);
+      p.lineTo(ww + 4, H + 4);
+      p.lineTo(-4, H + 4);
+      p.closePath();
+      var q = new Path2D();
+      q.rect(-8, -8, ww + 16, H + 16);
+      q.addPath(p);
+      cutIn = p; cutOut = q;
     }
 
     // os pontos da lista, um traço por cor (ordenados por contagem)
-    function paint(c, m) {
+    function paint(c, m, cols) {
       var q, k, nq = NB * NW;
       cnt.fill(0);
       for (k = 0; k < m; k++) cnt[DQ[k] + 1]++;
@@ -204,7 +241,7 @@
       for (q = 0; q < nq; q++) {
         var e = cnt[q];
         if (e === s) continue;
-        c.fillStyle = COL[q];
+        c.fillStyle = cols[q];
         c.beginPath();
         for (k = s; k < e; k++) {
           var p = ORD[k], r = DR[p];
@@ -329,23 +366,31 @@
     }
 
     function draw() {
+      var cp = cutIn && base2 ? cutIn : null;
       g.setTransform(1, 0, 0, 1, 0, 0);
       g.drawImage(base, 0, 0);
+      if (cp) {
+        g.save();
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        g.clip(cp);
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        g.drawImage(base2, 0, 0);
+        g.restore();
+      }
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var k, n, m = 0;
+      var k, n, m = 0, er = null;
       if (nAct) {
         // o lugar de repouso de quem saiu dele vira fundo; quem saiu menos de um terço de
         // pixel fica como está na camada pronta (é o grosso de um anel passando)
-        g.fillStyle = bgStr;
-        g.beginPath();
+        er = new Path2D();
         for (k = 0; k < nAct; k++) {
           n = act[k];
           var dd = Math.hypot(X[n] - HX[n], Y[n] - HY[n]), e = E[n];
           if (!FL[n] && dd < 0.35 && e < 0.02 && GR[n] === 1) continue;
           if (R0[n] >= 0.2) {
             var re = R0[n] + 0.7;
-            g.moveTo(HX[n] + re, HY[n]);
-            g.arc(HX[n], HY[n], re, 0, TAU);
+            er.moveTo(HX[n] + re, HY[n]);
+            er.arc(HX[n], HY[n], re, 0, TAU);
           }
           if (FL[n]) continue;
           var r = R0[n] * GR[n];
@@ -356,7 +401,6 @@
           DQ[m] = qOf(B0[n] + (1 - B0[n]) * Math.max(e, wd * 0.75), Math.max(wd, e > 0 ? 3.8 * e * (1 - e) : 0));
           m++;
         }
-        g.fill();
       }
       // os pontos arrancados, a caminho da pasta, cada um com duas cópias atrás
       for (k = flyers.length - 1; k >= 0; k--) {
@@ -379,7 +423,22 @@
           m++;
         }
       }
-      if (m) paint(g, m);
+      if (!cp) {
+        if (er) { g.fillStyle = bgStr; g.fill(er); }
+        if (m) paint(g, m, COL);
+        return;
+      }
+      // com recorte, duas passadas: fora dele no escuro, dentro no papel
+      g.save();
+      g.clip(cutOut, 'evenodd');
+      if (er) { g.fillStyle = bgStr; g.fill(er); }
+      if (m) paint(g, m, COL);
+      g.restore();
+      g.save();
+      g.clip(cp);
+      if (er) { g.fillStyle = bg2Str; g.fill(er); }
+      if (m) paint(g, m, COL2);
+      g.restore();
     }
 
     // dt em ms; (px, py) o ponteiro no espaço do quadro; live: false desenha parado
@@ -443,7 +502,7 @@
 
     return {
       resize: resize, title: setTitle, pool: setPool, frame: frame,
-      ripple: ripple, burst: burst, comet: comet, reset: reset,
+      ripple: ripple, burst: burst, comet: comet, reset: reset, cut: setCut,
       touch: function () { dirty = true; }
     };
   }

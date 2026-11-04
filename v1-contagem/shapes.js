@@ -9,7 +9,8 @@
   'use strict';
 
   var TAU = Math.PI * 2;
-  var COLORS = ['#ffa64d', '#2c4bd1', '#e4472b', '#f4f2ec'];
+  // a quarta cor é a tinta do quadro: no vidro claro do papel, escura
+  var COLORS = ['#ffa64d', '#2c4bd1', '#e4472b', '#111110'];
   var KINDS = [
     ['circle', 0, 0.085], ['square', 1, 0.07], ['tri', 2, 0.082], ['ring', 1, 0.062],
     ['square', 3, 0.056], ['circle', 2, 0.05], ['tri', 0, 0.06], ['half', 3, 0.07]
@@ -130,7 +131,8 @@
         g.save();
         g.translate(o.x, o.y);
         g.rotate(o.a);
-        g.globalAlpha = 0.8;
+        // no vidro claro, 0,8 deixava o laranja e o vermelho em tom pastel ao lado do azul e da tinta
+        g.globalAlpha = 0.92;
         g.fillStyle = o.col;
         g.strokeStyle = o.col;
         g.beginPath();

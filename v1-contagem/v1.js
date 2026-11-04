@@ -1,10 +1,10 @@
 /* Versão 1 · Contagem: a rolagem
-   A página rola como qualquer página. Cada capítulo é uma cena presa na tela
-   (position: sticky) enquanto a rolagem a conta, e a seguinte sobe por cima
-   dela. A cada quadro o script lê a rolagem, diz a cada cena quanto dela já
-   passou e faz a de baixo recuar e escurecer enquanto é coberta. Nada segura a
-   rolagem: roda, trackpad, toque, teclado e leitor de tela fazem o que sempre
-   fazem numa página. */
+   Uma página só, que rola como qualquer site: os capítulos vêm um depois do
+   outro, cada um do tamanho da tela, sem um cobrir o outro. Só o rolo de vídeos
+   fica preso na tela (position: sticky) enquanto a rolagem o passa de lado. A
+   cada quadro o script lê a rolagem e diz a cada cena se ela está à vista e qual
+   está em foco. Nada segura a rolagem: roda, trackpad, toque, teclado e leitor
+   de tela fazem o que sempre fazem numa página. */
 (function () {
   'use strict';
 
@@ -30,7 +30,7 @@
   var nW = S.works.length;
 
   var scenes = $$('.scene').map(function (el) {
-    return { el: el, key: el.getAttribute('data-scene'), stage: $('.stage', el), top: 0, h: 0, last: '' };
+    return { el: el, key: el.getAttribute('data-scene'), stage: $('.stage', el), top: 0, h: 0 };
   });
   var byKey = {};
   scenes.forEach(function (s) { byKey[s.key] = s; });
@@ -43,54 +43,34 @@
   });
 
   /* ---------- Medidas ----------
-     VH é a altura de uma cena (100lvh); cada cena tem as suas fatias de rolagem:
-     chega (fin, a tela em que ela sobe), conta (p, enquanto está presa) e é
-     coberta (fout, a tela em que a seguinte sobe por cima dela). */
+     VH é a altura de um capítulo (100lvh). Os capítulos têm uma tela cada, um
+     depois do outro; o rolo é mais alto, e a rolagem que sobra além da tela dele
+     (own) é a que passa os vídeos. */
 
   var VH = 1, step = 1;
   var strip = $('.strip'), reelEls = C.reels;
+  var hudTop = $('.hud-top'), hudBot = $('.hud-bottom'), tH = 48, bH = 56;
   function measure() {
     VH = scenes[0].stage.offsetHeight || window.innerHeight;
-    scenes.forEach(function (s) { s.top = s.el.offsetTop; s.h = s.el.offsetHeight; s.last = ''; });
+    scenes.forEach(function (s) { s.top = s.el.offsetTop; s.h = s.el.offsetHeight; });
     step = reelEls.length > 1 ? reelEls[1].offsetLeft - reelEls[0].offsetLeft : 1;
+    tH = hudTop.offsetHeight || tH; bH = hudBot.offsetHeight || bH;
+    paperLast = '';
   }
-  function own(s) { return Math.max(1, s.h - 2 * VH); }
-  function spans(s, i, y) {
+  function own(s) { return Math.max(1, s.h - VH); }
+  // p: quanto da cena já passou com ela presa no alto (só o rolo usa);
+  // px: quantos pixels dela estão na tela agora
+  function view(s, y) {
     return {
       p: clamp((y - s.top) / own(s), 0, 1),
-      fin: i ? clamp((y - (s.top - VH)) / VH, 0, 1) : 1,
-      fout: i < scenes.length - 1 ? clamp((y - (s.top + s.h - 2 * VH)) / VH, 0, 1) : 0
+      px: Math.max(0, Math.min(y + VH, s.top + s.h) - Math.max(y, s.top))
     };
-  }
-
-  /* a cena coberta recua para dentro da janela do projetor: encolhe, ganha os
-     cantos do quadro e escurece; a que chega traz os cantos de cima e os perde
-     ao encostar no alto da tela */
-  var RAD = 28;
-  function depth(s, fin, fout) {
-    var live = motionOn();
-    var k = live ? 1 - 0.07 * fout : 1;
-    var rad = !live ? 0 : fout > 0 ? RAD * Math.min(1, fout / 0.3) : fin < 1 ? RAD * Math.min(1, (1 - fin) / 0.3) : 0;
-    var topOnly = fout <= 0;
-    var dim = live ? 0.72 * fout : 0;
-    var arriving = fin > 0 && fin < 1;
-    var key = k.toFixed(4) + '|' + rad.toFixed(1) + '|' + topOnly + '|' + dim.toFixed(3) + '|' + arriving;
-    if (key === s.last) return;
-    s.last = key;
-    var st = s.stage.style, r = rad.toFixed(1) + 'px';
-    st.transform = k < 1 ? 'scale(' + k.toFixed(4) + ')' : '';
-    st.borderRadius = rad > 0.05 ? (topOnly ? r + ' ' + r + ' 0 0' : r) : '';
-    st.setProperty('--dim', dim.toFixed(3));
-    st.willChange = fout > 0 && fout < 1 ? 'transform' : '';
-    s.stage.classList.toggle('is-arriving', arriving);
-    // com os cantos do projetor a cena passa a ser recortada, e nesse trecho o navegador
-    // deixa de recortar o que tem desfoque de fundo: o vidro da pasta vira camada comum
-    s.stage.classList.toggle('is-cut', rad > 0.05);
   }
 
   /* ---------- O rolo ----------
      Presa a cena, a rolagem passa os vídeos de lado: o do meio fica inteiro, os
-     vizinhos encolhem e apagam. O fim da fatia segura o último vídeo. */
+     vizinhos encolhem e apagam. O fim da fatia segura o último vídeo, e então o
+     rolo solta e sobe como o resto da página, com o contato vindo atrás. */
 
   var REEL_RUN = 0.86;
   var pos = 0, reelsOn = false;
@@ -253,6 +233,26 @@
       try { history.replaceState(null, '', ci === 0 ? location.pathname + location.search : '#' + h); } catch (e) { /* file:// */ }
     }
   }
+  /* ---------- O papel sob o HUD ----------
+     A História é papel claro. As barras presas na tela (a de cima e as pílulas do índice)
+     trocam para tinta quando o papel está atrás do meio delas, e o véu escuro de cada barra
+     sai assim que o papel encosta na faixa dele: no claro, ele sujaria o papel de cinza. */
+  var paperLast = '';
+  function paperHud(y) {
+    var s = byKey.design;
+    if (!s) return;
+    var a = s.top - y, b = a + s.h, ih = window.innerHeight, bc = ih - bH / 2;
+    var tOn = a <= tH / 2 && b > tH / 2, bOn = a <= bc && b > bc;
+    var tVeil = a < tH + 24 && b > 0, bVeil = a < ih && b > ih - bH - 30;
+    var key = '' + +tOn + +bOn + +tVeil + +bVeil;
+    if (key === paperLast) return;
+    paperLast = key;
+    hudTop.classList.toggle('on-light', tOn);
+    hudTop.classList.toggle('no-veil', tVeil);
+    hudBot.classList.toggle('on-light', bOn);
+    hudBot.classList.toggle('no-veil', bVeil);
+  }
+
   $('[data-home]').addEventListener('click', function () { goChapter(0); });
   /* o portal do contato: o clique acende o portal e engata a viagem de volta. A página
      acelera para cima, e no auge da velocidade (sob o desfoque) salta o meio do caminho
@@ -321,24 +321,24 @@
     var v = lastY < 0 || !dt ? 0 : Math.abs(y - lastY) / VH / (dt / 1000);
     lastY = y;
     speed += (Math.min(v, 6) - speed) * (1 - Math.exp(-dt / 140));
+    // em foco fica o capítulo que ocupa mais da tela (no empate, o que vem chegando)
     var focus = '', best = -1;
-    scenes.forEach(function (s, i) {
-      var sp = spans(s, i, y), vis = sp.fin > 0 && sp.fout < 1;
-      depth(s, sp.fin, sp.fout);
-      if (s.key === 'reels') reels(sp.p, vis, dt);
-      else C.set(s.key, sp.p, vis);
-      var w = sp.fin - sp.fout;
-      if (w >= best) { best = w; focus = s.key; }
+    scenes.forEach(function (s) {
+      var v = view(s, y), vis = v.px > 0.5;
+      if (s.key === 'reels') reels(v.p, vis, dt);
+      else C.set(s.key, v.p, vis);
+      if (v.px >= best) { best = v.px; focus = s.key; }
     });
     C.current(focus === 'reels' ? 'reel' + Math.round(pos) : focus);
     C.frame(dt, now, speed);
     updateHud(y);
+    paperHud(y);
   }
 
   /* ---------- Início ---------- */
 
   Site.on('lang', function () { renderIndex(); });
-  Site.on('motion', function () { scenes.forEach(function (s) { s.last = ''; }); reelsOn = true; });
+  Site.on('motion', function () { reelsOn = true; });
 
   var rt = 0;
   window.addEventListener('resize', function () {

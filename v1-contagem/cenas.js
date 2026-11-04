@@ -1125,7 +1125,9 @@
 
     /* fundo do painel e formas do quadro */
     var designFrame = $('.frame--design');
-    var lattice = global.LatticeField ? global.LatticeField.create($('.lattice', designFrame)) : null;
+    // no papel a malha é de tinta, e o cursor a escurece: um grafite quente tinge os
+    // triângulos em volta, com um pouco menos de força que a luz, para a mancha ficar leve
+    var lattice = global.LatticeField ? global.LatticeField.create($('.lattice', designFrame), { ink: '17, 17, 16', hot: '38, 34, 29', glow: 0.75 }) : null;
     var shapes = global.ShapeField ? global.ShapeField.create($('.m-shapes')) : null;
     function toLocal(el, cx, cy) {
       var b = el.getBoundingClientRect(), sc = b.width / Math.max(1, el.offsetWidth) || 1;
@@ -1378,6 +1380,7 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       worksFrame.classList.toggle('is-open', on);
       // aberta, a pasta mostra todos sem destaque
       if (on) callSheet(-1);
+      if (cut) cut.open(on);
       renderFolder();
     }
     // a folha do trabalho da vez sobe acima do vidro
@@ -1525,10 +1528,15 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       var fit = ht.title(lines, { x: x0, y: y0, w: edges.map(function (e) { return Math.max(40, e - x0); }), h: maxH },
         onion.portrait ? 'normal' : wd >= 116 ? 'expanded' : 'semi-expanded');
       worksFrame.style.setProperty('--ht-gap', Math.max(0, fit.bottom - y0).toFixed(1) + 'px');
+      onion.titleRight = fit.right;
     }
     // a pasta à direita (embaixo, no retrato); o arco sobe do lado do título e mergulha no bolso dela
     function layoutOnion() {
       var w = worksFrame.clientWidth || 1000, h = worksFrame.clientHeight || 360;
+      // no celular, o fundo do palco fica atrás da barra do navegador (--vb, que o CSS põe no
+      // padding de baixo de .folders): a pasta se assenta na altura que se vê, hv
+      var vb = foldersHost ? parseFloat(getComputedStyle(foldersHost).paddingBottom) || 0 : 0;
+      var hv = Math.max(h * 0.6, h - vb);
       onion.w = w; onion.h = h;
       onion.svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
       onion.portrait = w / h < 1;
@@ -1536,16 +1544,16 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       if (ht) ht.resize(w, h);
       var s, x, yb;
       if (!onion.portrait) {
-        s = Math.min(w * 0.33 / GF_W, h * 0.44 / GF_H); x = w * 0.66 - GF_W * s / 2; yb = h * 0.88;
+        s = Math.min(w * 0.33 / GF_W, hv * 0.44 / GF_H); x = w * 0.66 - GF_W * s / 2; yb = hv * 0.88;
         // com o título grande, a pasta chega um pouco para a direita e a segunda linha para antes dela
         if (ht) {
-          s = Math.min(w * 0.28 / GF_W, h * 0.42 / GF_H); x = w * 0.735 - GF_W * s / 2;
+          s = Math.min(w * 0.28 / GF_W, hv * 0.42 / GF_H); x = w * 0.735 - GF_W * s / 2;
           layoutWordmark([w * 0.92, x - w * 0.035], h * 0.36);
         }
       } else {
         if (ht) layoutWordmark([w * 0.94], h * 0.2);
-        s = Math.min(w * 0.82 / GF_W, h * 0.34 / GF_H); x = (w - GF_W * s) / 2;
-        yb = h * 0.92 - Math.max(0, (h * 0.92 - copyBottom() - GF_H * s - h * 0.3) / 2);
+        s = Math.min(w * 0.82 / GF_W, hv * 0.34 / GF_H); x = (w - GF_W * s) / 2;
+        yb = hv * 0.92 - Math.max(0, (hv * 0.92 - copyBottom() - GF_H * s - hv * 0.3) / 2);
       }
       placeFolder(folder, x, yb - (GF_H + GF_ROOM) * s, s);
       var cx = x + GF_W * s / 2, top = yb - GF_H * s, pocket = top + (GF_FRONT + 44) * s;
@@ -1560,6 +1568,7 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       if (onion.toss) onion.toss.setAttribute('r', onion.r);
       onion.ghosts.forEach(function (g) { g.el.setAttribute('r', (onion.r * 0.94).toFixed(1)); });
       placeOpenNote(x, yb, s);
+      if (cut) cut.layout(w, h, onion.portrait, { x: x, y: yb - GF_H * s, w: GF_W * s, h: GF_H * s });
       if (motionOn()) drawOnion(clock || 0); else staticOnion();
     }
     // o arco com o meio deslocado (bx, by): é assim que ele se curva na direção do cursor
@@ -1684,6 +1693,7 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       wk.start = clock; wk.landed = -1; wk.cur = -1; wk.toss = null; wk.callEnd = 0;
       callSheet(-1);
       enterFolders();
+      if (cut) cut.enter();
       // sem animação não há sequência: fica o primeiro trabalho em destaque
       if (!motionOn()) wk.cur = 0;
       renderWork();
@@ -1716,7 +1726,199 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       if (!ht) return;
       var live = motionOn();
       var gp = live && ptr.on && !E.overview() ? toLocal(worksFrame, ptr.x, ptr.y) : null;
+      if (cut) cut.tick(dt, live, gp && gp.inside && ptr.mouse ? gp : null);
       ht.frame(dt, gp ? gp.x : 0, gp ? gp.y : 0, !!(gp && gp.inside), live);
+    }
+
+    /* ---------- 4 · Trabalhos: a maré de papel ----------
+       O canto de baixo à direita do quadro é papel claro, e a retícula se inverte nele
+       (pontos escuros no claro, cortados pela borda). A borda sobe como uma maré conforme
+       a vontade de abrir a pasta: baixa, rente a ela, com o cursor longe; sobe quando o
+       cursor chega perto, mais em cima dela, e cobre quase o quadro todo com a pasta
+       aberta. Perto da pasta o papel responde antes, e as pontas vêm depois. Ao chegar
+       no quadro, ele entra por baixo. Sem a retícula não há papel. */
+    var cut = ht ? makeTide() : null;
+
+    function makeTide() {
+      // as formas: a altura da borda (fração da altura do quadro) em onze pontos fixos de x
+      var KU = [0, 0.12, 0.25, 0.38, 0.5, 0.6, 0.7, 0.78, 0.84, 0.9, 1], NK = KU.length;
+      var SH = {
+        // maré baixa, rente à pasta: o canto de baixo à esquerda fica escuro
+        baixa: [1.06, 1.05, 1.02, 0.95, 0.8, 0.6, 0.56, 0.52, 0.45, 0.38, 0.35],
+        // a meia maré, a do rabisco: subida mansa até a pasta, um patamar sob ela e um penhasco à direita
+        meia: [0.945, 0.857, 0.77, 0.68, 0.615, 0.59, 0.555, 0.39, 0.25, 0.21, 0.19],
+        // a pasta aberta: o papel sobe para os arquivos abertos assentarem nele
+        cheia: [0.8, 0.74, 0.66, 0.57, 0.47, 0.39, 0.31, 0.25, 0.21, 0.19, 0.17]
+      };
+      var c = {
+        w: 1, h: 1, portrait: false, box: null, K: 1, ys: null, last: null, shown: false,
+        yLeft: 0, yTop: 0, xEdge: 0, pillR: 0, hb: 48, idle: false, ui: false, hadPtr: false, open: false,
+        kv: new Float32Array(NK), tg: new Float32Array(NK)
+      };
+      var noteEl = openNote, hudBar = $('.hud-bottom'), reelStage = $('#videos .stage');
+
+      // as formas prontas para a tela: onde ficam as pílulas do rodapé, a borda em repouso
+      // nunca para em cima delas (metade da pílula ficaria no papel e metade no escuro).
+      // Lá ela passa acima da faixa delas ou abaixo do quadro; cruzar a faixa, só andando
+      var SS = {}, PZ = new Uint8Array(NK);
+      function safeShapes() {
+        Object.keys(SH).forEach(function (k) { SS[k] = SH[k].slice(); });
+        PZ.fill(0);
+        if (c.portrait || !c.pillR) return;
+        var idx = [];
+        for (var i = 0; i < NK; i++) if (KU[i] * c.w <= c.pillR + 40) { idx.push(i); PZ[i] = 1; }
+        if (!idx.length) return;
+        var above = (c.h - c.hb / 2 - 22) / c.h, below = (c.h + 30) / c.h;
+        Object.keys(SS).forEach(function (k) {
+          var sh = SS[k], mid = sh[idx[idx.length >> 1]], up = mid < (above + below) / 2;
+          idx.forEach(function (i) { sh[i] = up ? Math.min(sh[i], above) : Math.max(sh[i], below); });
+        });
+      }
+
+      // no retrato a pasta fica embaixo, no meio: as formas se achatam numa faixa mais baixa
+      function fv(v) { return c.portrait ? 0.44 + (v - 0.19) * 0.36 : v; }
+
+      // a borda passa por pontos (KU, kv) com tangentes de diferenças finitas: é sempre
+      // uma função de x, macia, e nunca sobe acima do título nem da barra de cima
+      var tg = c.tg;
+      function sample() {
+        var kv = c.kv, w = c.w, K = c.K, ys = c.ys, i;
+        for (i = 0; i < NK; i++) {
+          var a = Math.max(0, i - 1), b = Math.min(NK - 1, i + 1);
+          tg[i] = (kv[b] - kv[a]) / ((KU[b] - KU[a]) * w);
+        }
+        var seg = 0;
+        for (var k = 0; k <= K; k++) {
+          var x = k * w / K, u = x / w;
+          while (seg < NK - 2 && u > KU[seg + 1]) seg++;
+          var x0 = KU[seg] * w, hh = (KU[seg + 1] - KU[seg]) * w, t = clamp((x - x0) / hh, 0, 1);
+          var t2 = t * t, t3 = t2 * t;
+          var y = (2 * t3 - 3 * t2 + 1) * kv[seg] + (t3 - 2 * t2 + t) * hh * tg[seg] +
+            (-2 * t3 + 3 * t2) * kv[seg + 1] + (t3 - t2) * hh * tg[seg + 1];
+          // o teto: embaixo do bloco do título à esquerda, embaixo da barra de cima depois dele
+          var cl = lerp(c.yLeft, c.yTop, smooth01((x - c.xEdge) / 160));
+          ys[k] = (y + cl + Math.sqrt((y - cl) * (y - cl) + 1600)) / 2;
+        }
+      }
+      function edgeAt(x) {
+        if (!c.ys) return 1e9;
+        var f = clamp(x / c.w, 0, 1) * c.K, i = Math.min(c.K - 1, Math.floor(f));
+        return lerp(c.ys[i], c.ys[i + 1], f - i);
+      }
+      // manda a borda para a retícula só quando ela andou (parada, a retícula dorme)
+      function send() {
+        var ys = c.ys, last = c.last, moved = !c.shown;
+        for (var k = 0; !moved && k < ys.length; k++) if (Math.abs(ys[k] - last[k]) > 0.08) moved = true;
+        if (!moved) return;
+        last.set(ys);
+        c.shown = true;
+        ht.cut(ys, c.w);
+      }
+
+      // o que fica em cima do papel troca de cor: o bilhete "abrir" e as pílulas do rodapé
+      var hudBtns = [];
+      function paperUi(on) {
+        if (!hudBtns.length) hudBtns = $$('.index button');
+        // primeiro todas as medidas, depois as trocas de classe (senão cada troca refaz o layout)
+        var noteHit = false, hits = [], veil = false, fb, sc, rt;
+        if (on) {
+          if (noteEl) noteHit = noteEl.offsetTop + noteEl.offsetHeight * 0.6 > edgeAt(noteEl.offsetLeft + noteEl.offsetWidth / 2);
+          fb = worksFrame.getBoundingClientRect(); sc = fb.width / Math.max(1, worksFrame.offsetWidth) || 1;
+          rt = reelStage ? reelStage.getBoundingClientRect().top : 1e9;
+          hudBtns.forEach(function (b) {
+            var r = b.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+            hits.push(cy >= fb.top && cy < rt && (cy - fb.top) / sc > edgeAt((cx - fb.left) / sc));
+          });
+          // o véu do rodapé sai quando o papel encosta na faixa de baixo (senão ele suja o papel)
+          // e nada cobre o quadro ali; com a cena seguinte subindo, ele volta
+          var vb = global.innerHeight, band = hudBar ? hudBar.offsetHeight + 30 : 90;
+          if (rt >= vb - 2 && fb.top < vb - band) {
+            var lim = (vb - fb.top) / sc - 2;
+            for (var k = 0; k <= c.K && !veil; k++) if (c.ys[k] < lim) veil = true;
+          }
+        }
+        if (noteEl && noteHit !== noteEl.classList.contains('on-paper')) noteEl.classList.toggle('on-paper', noteHit);
+        hudBtns.forEach(function (b, i) {
+          var hit = !!hits[i];
+          if (hit !== b.classList.contains('on-paper')) b.classList.toggle('on-paper', hit);
+        });
+        if (hudBar && veil !== hudBar.classList.contains('on-paper')) hudBar.classList.toggle('on-paper', veil);
+      }
+
+      // a maré de cada ponto da borda: 0 é baixa, 0,5 é meia, 1 é cheia (abaixo de 0, fora do quadro)
+      var lam = new Float32Array(NK), lv = new Float32Array(NK);
+      function shapeAt(i, l) {
+        if (l < 0) return SS.baixa[i] - l * 0.5;
+        // embaixo das pílulas o papel só sobe com a pasta abrindo, de uma vez: perto ou em
+        // cima dela, a ponta esquerda fica fora do quadro e as pílulas, no escuro
+        if (PZ[i]) return lerp(SS.baixa[i], SS.cheia[i], smooth01((l - 0.62) / 0.25));
+        if (l <= 0.5) return lerp(SS.baixa[i], SS.meia[i], l / 0.5);
+        return lerp(SS.meia[i], SS.cheia[i], (l - 0.5) / 0.5);
+      }
+      function step(dt, live, gp) {
+        var want = 0, b = c.box;
+        if (c.open) want = 1;
+        else if (gp && b) {
+          var ddx = Math.max(b.x - gp.x, 0, gp.x - b.x - b.w), ddy = Math.max(b.y - gp.y, 0, gp.y - b.y - b.h);
+          var d = Math.hypot(ddx, ddy);
+          want = d === 0 ? 0.56 : 0.42 * (1 - smooth01(d / (b.w * 1.3)));
+        }
+        var uf = b ? (b.x + b.w / 2) / c.w : 0.7, still = true;
+        for (var i = 0; i < NK; i++) {
+          if (!live) { lam[i] = want; lv[i] = 0; }
+          else {
+            // perto da pasta o papel responde antes; nas pontas, com atraso
+            var W0 = TAU * (0.9 - 0.5 * Math.min(1, Math.abs(KU[i] - uf) * 1.6)), Z = 0.58;
+            for (var s = 0, n = Math.ceil(dt / 8); s < n; s++) {
+              var h = dt / n / 1000;
+              lv[i] += (W0 * W0 * (want - lam[i]) - 2 * Z * W0 * lv[i]) * h;
+              lam[i] += lv[i] * h;
+            }
+            if (Math.abs(lv[i]) > 1e-4 || Math.abs(want - lam[i]) > 1e-4) still = false;
+          }
+          c.kv[i] = fv(shapeAt(i, lam[i])) * c.h;
+        }
+        return still;
+      }
+
+      return {
+        layout: function (w, h, portrait, box) {
+          c.w = w; c.h = h; c.portrait = portrait; c.box = box;
+          c.K = Math.max(40, Math.min(420, Math.ceil(w / 5)));
+          if (!c.ys || c.ys.length !== c.K + 1) { c.ys = new Float32Array(c.K + 1); c.last = new Float32Array(c.K + 1); }
+          var top = $('.hud-top'), cb = copyBottom();
+          c.yTop = (top ? top.offsetHeight : 48) + 34;
+          c.yLeft = Math.max(c.yTop, cb + 30);
+          c.xEdge = portrait ? w * 2 : (onion.titleRight || w * 0.6) + 30;
+          var ix = $('.index'), fb = worksFrame.getBoundingClientRect();
+          c.pillR = ix && ix.offsetWidth ? ix.getBoundingClientRect().right - fb.left : 0;
+          c.hb = hudBar ? hudBar.offsetHeight : 48;
+          safeShapes();
+          c.shown = false; c.idle = false;
+          this.tick(0, motionOn(), null);
+        },
+        // ao chegar no quadro o papel entra por baixo
+        enter: function () {
+          c.open = false;
+          if (motionOn()) { lam.fill(-0.8); lv.fill(0); }
+          c.idle = false;
+        },
+        open: function (on) { c.open = on; c.idle = false; },
+        tick: function (dt, live, gp) {
+          if (!c.ys) return;
+          c.ui = true;
+          // assentada e sem o cursor por perto, a maré dorme (o cursor saindo ainda a acorda)
+          var hasPtr = !!gp;
+          if (c.idle && c.shown && !hasPtr && !c.hadPtr) { paperUi(true); return; }
+          c.hadPtr = hasPtr;
+          var still = step(dt, live, gp);
+          sample();
+          send();
+          c.idle = still;
+          paperUi(true);
+        },
+        off: function () { if (c.ui) { c.ui = false; paperUi(false); } }
+      };
     }
     // sem animação: o caminho inteiro e o ponto chegando na pasta (com a retícula, só ela parada)
     function staticOnion() {
@@ -2327,7 +2529,7 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
         if (SC.works.vis) drawOnion(clock);
         if (SC.close.vis) creditsFx(dt, v);
       }
-      if (SC.works.vis) worksFx(dt);
+      if (SC.works.vis) worksFx(dt); else if (cut) cut.off();
       tickPlaceholders(clock);
     }
 

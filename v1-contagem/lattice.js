@@ -10,6 +10,7 @@
   opts (tudo opcional; o padrão é tinta clara sobre o escuro):
     ink  cor da malha, "r, g, b"
     hot  cor da luz do cursor e da onda, "r, g, b"
+    glow quanto a luz do cursor tinge os triângulos (1 é o padrão)
 */
 (function (global) {
   'use strict';
@@ -70,7 +71,7 @@
     var g = canvas.getContext && canvas.getContext('2d');
     if (!g) return null;
     var o = opts || {};
-    var INK = o.ink || '237, 237, 234', HOT = o.hot || '255, 166, 77';
+    var INK = o.ink || '237, 237, 234', HOT = o.hot || '255, 166, 77', GLOW = o.glow == null ? 1 : o.glow;
     var W = 0, H = 0, dpr = 1, S = 100, L = 130, M = 120;
     var P = [], X = [], Y = [], deg = [], seen = null, live = [];
     var ripples = [], pulses = [], time = 0, nextPulse = 1.2, dirty = true;
@@ -214,7 +215,7 @@
         g.beginPath(); g.moveTo(xa, ya); g.lineTo(xb, yb); g.lineTo(xc, yc); g.closePath();
         g.fillStyle = rgba(INK, v * (0.034 + 0.07 * ee));
         g.fill();
-        var lit = 0.24 * hh + 0.26 * ww;
+        var lit = (0.24 * hh + 0.26 * ww) * GLOW;
         if (lit > 0.004) { g.fillStyle = rgba(HOT, v * lit); g.fill(); }
       }
 
