@@ -127,32 +127,47 @@
 
   /* no toque os vídeos também se arrastam de lado: o gesto horizontal vira a mesma rolagem
      que passa o rolo (a cena continua presa e a fita segue o dedo) e, ao soltar, ela assenta
-     no vídeo mais perto, ou no seguinte se o gesto foi um peteleco. O gesto vertical continua
-     sendo a rolagem da página, e com mouse nada muda. */
+     no vídeo mais perto, ou no seguinte se o gesto foi um peteleco. Depois do último vídeo o
+     gesto segue até o contato, que conta como mais uma casa do rolo, e no contato o gesto de
+     volta traz o último vídeo. O gesto vertical continua sendo a rolagem da página, e com mouse
+     nada muda. */
   (function reelSwipe() {
-    var st = byKey.reels && byKey.reels.stage;
-    if (!st || nW < 2) return;
+    if (!byKey.reels || !byKey.close || nW < 2) return;
     var g = null, swallow = false;
-    // quantos pixels de rolagem passam um vídeo
-    function perReel() { return REEL_RUN * own(byKey.reels) / (nW - 1); }
-    st.addEventListener('pointerdown', function (e) {
-      if (e.pointerType !== 'touch') return;
-      g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, sy: window.pageYOffset, on: false, pts: [], f0: 0 };
-    });
-    st.addEventListener('pointermove', function (e) {
-      if (!g || e.pointerId !== g.id) return;
-      var dx = e.clientX - g.x0, dy = e.clientY - g.y0;
-      if (!g.on) {
-        // só vira arrasto de lado quando o dedo anda mais na horizontal que na vertical
-        if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return;
-        g.on = true; g.x0 = e.clientX; dx = 0;
-        g.sy = clamp(window.pageYOffset, reelY(0), reelY(nW - 1)); g.f0 = (g.sy - reelY(0)) / perReel();
-        try { st.setPointerCapture(e.pointerId); } catch (err) { /* ok */ }
-      }
-      scrollToY(clamp(g.sy - dx / Math.max(1, step) * perReel(), reelY(0), reelY(nW - 1)), true);
-      var now = performance.now();
-      g.pts.push({ x: e.clientX, t: now });
-      while (g.pts.length > 2 && now - g.pts[0].t > 90) g.pts.shift();
+    // a casa f do gesto (0 é o primeiro vídeo, nW é o contato) e a rolagem que a mostra
+    function yAt(f) {
+      var a = reelY(0), b = reelY(nW - 1);
+      return f <= nW - 1 ? a + f / (nW - 1) * (b - a) : b + (f - nW + 1) * (byKey.close.top - b);
+    }
+    function fAt(y) {
+      var a = reelY(0), b = reelY(nW - 1), c = byKey.close.top;
+      y = clamp(y, a, c);
+      return y <= b ? (y - a) / Math.max(1, b - a) * (nW - 1) : nW - 1 + (y - b) / Math.max(1, c - b);
+    }
+    [byKey.reels.stage, byKey.close.stage].forEach(function (st) {
+      st.addEventListener('pointerdown', function (e) {
+        if (e.pointerType !== 'touch') return;
+        g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, on: false, pts: [], f0: 0 };
+      });
+      st.addEventListener('pointermove', function (e) {
+        if (!g || e.pointerId !== g.id) return;
+        var dx = e.clientX - g.x0, dy = e.clientY - g.y0;
+        if (!g.on) {
+          // só vira arrasto de lado quando o dedo anda mais na horizontal que na vertical
+          if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return;
+          g.on = true; g.x0 = e.clientX; dx = 0;
+          g.f0 = fAt(window.pageYOffset);
+          try { st.setPointerCapture(e.pointerId); } catch (err) { /* ok */ }
+        }
+        scrollToY(yAt(clamp(g.f0 - dx / Math.max(1, step), 0, nW)), true);
+        var now = performance.now();
+        g.pts.push({ x: e.clientX, t: now });
+        while (g.pts.length > 2 && now - g.pts[0].t > 90) g.pts.shift();
+      });
+      st.addEventListener('pointerup', endSwipe);
+      st.addEventListener('pointercancel', endSwipe);
+      // o toque que terminou um arrasto não vale como clique
+      st.addEventListener('click', function (e) { if (swallow) { e.preventDefault(); e.stopPropagation(); } }, true);
     });
     function endSwipe(e) {
       if (!g || e.pointerId !== g.id) return;
@@ -162,17 +177,13 @@
       setTimeout(function () { swallow = false; }, 60);
       var a = d.pts[0], b = d.pts[d.pts.length - 1];
       var vx = a && b && b.t > a.t && performance.now() - b.t < 80 ? (b.x - a.x) / (b.t - a.t) : 0;
-      // passou de um quarto de vídeo (ou foi um peteleco), assenta no seguinte na direção do gesto
-      var f = (window.pageYOffset - reelY(0)) / perReel(), dl = f - d.f0, k = Math.round(f);
+      // passou de um quarto de casa (ou foi um peteleco), assenta na seguinte na direção do gesto
+      var f = fAt(window.pageYOffset), dl = f - d.f0, k = Math.round(f);
       if (dl > 0) k = Math.floor(f + 0.75); else if (dl < 0) k = Math.ceil(f - 0.75);
       if (vx < -0.3) k = Math.max(k, Math.round(d.f0) + 1); else if (vx > 0.3) k = Math.min(k, Math.round(d.f0) - 1);
-      k = clamp(k, 0, nW - 1);
-      goWork(k);
+      k = clamp(k, 0, nW);
+      if (k === nW) scrollToY(byKey.close.top); else goWork(k);
     }
-    st.addEventListener('pointerup', endSwipe);
-    st.addEventListener('pointercancel', endSwipe);
-    // o toque que terminou um arrasto não vale como clique
-    st.addEventListener('click', function (e) { if (swallow) { e.preventDefault(); e.stopPropagation(); } }, true);
   })();
 
   var CH = [
@@ -243,6 +254,59 @@
     }
   }
   $('[data-home]').addEventListener('click', function () { goChapter(0); });
+  /* o portal do contato: o clique acende o portal e engata a viagem de volta. A página
+     acelera para cima, e no auge da velocidade (sob o desfoque) salta o meio do caminho
+     e desacelera até a apresentação. A cor, o desfoque e os riscos seguem a velocidade.
+     Sem movimento, o clique só leva até lá. */
+  var homeEnd = $('[data-home-end]'), warp = $('[data-warp]'), warpBusy = false;
+  var WARP_MS = 1150, WARP_JUMP = 0.45;
+  function setWarp(w) {
+    warp.style.setProperty('--w', w.toFixed(3));
+    var f = w > 0.01 ? 'blur(' + (w * 9).toFixed(2) + 'px) saturate(' + (1 + 0.45 * w).toFixed(3) + ')' : '';
+    warp.style.webkitBackdropFilter = warp.style.backdropFilter = f;
+  }
+  homeEnd.addEventListener('click', function () {
+    if (!motionOn()) { goChapter(0); return; }
+    if (warpBusy) return;
+    warpBusy = true;
+    homeHint(true);
+    homeEnd.classList.add('is-going');
+    // o brilho do portal vem primeiro; a viagem parte logo atrás dele
+    setTimeout(function () {
+      var y0 = window.pageYOffset, lead = Math.min(y0, VH * 0.9), tail = Math.min(y0 - lead, VH * 1.3);
+      var t0 = performance.now();
+      warp.classList.add('is-on');
+      (function step(now) {
+        var k = Math.min(1, (now - t0) / WARP_MS), y;
+        // a ida acelera (k³) até o salto, a chegada desacelera (1 - (1 - u)³)
+        if (k < WARP_JUMP) { var a = k / WARP_JUMP; y = y0 - lead * a * a * a; }
+        else { var u = (k - WARP_JUMP) / (1 - WARP_JUMP); y = tail * Math.pow(1 - u, 3); }
+        scrollToY(y, true);
+        // a força é um sino em volta do salto, mais curto na ida que na chegada
+        var d = (k - WARP_JUMP) / (k < WARP_JUMP ? 0.2 : 0.3);
+        setWarp(Math.exp(-d * d));
+        if (k < 1) requestAnimationFrame(step);
+        else {
+          setWarp(0);
+          warp.classList.remove('is-on');
+          homeEnd.classList.remove('is-going');
+          warpBusy = false;
+          homeHint(false);
+        }
+      })(t0);
+    }, 160);
+  });
+  // enquanto o portal está em uso, o capítulo 1 do rodapé acende: é para lá que ele leva
+  var homeHint = function (on) { root.classList.toggle('is-home-hint', on || warpBusy); };
+  ['pointerenter', 'focus'].forEach(function (ev) { homeEnd.addEventListener(ev, function () { homeHint(true); }); });
+  ['pointerleave', 'blur'].forEach(function (ev) { homeEnd.addEventListener(ev, function () { homeHint(false); }); });
+  // a luz dentro do vidro segue o mouse
+  homeEnd.addEventListener('pointermove', function (e) {
+    if (e.pointerType !== 'mouse') return;
+    var r = homeEnd.getBoundingClientRect();
+    homeEnd.style.setProperty('--lx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+    homeEnd.style.setProperty('--ly', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+  });
 
   /* ---------- Laço ---------- */
 

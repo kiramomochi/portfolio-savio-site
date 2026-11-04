@@ -142,6 +142,7 @@
   <section class="scene" id="trabalhos" data-scene="works" style="--len: 2.25" aria-labelledby="t-works">
     <div class="stage">
       <div class="frame frame--works">
+        <canvas class="halftone" aria-hidden="true"></canvas>
         <div class="onion">
           <svg class="onion-svg" viewBox="0 0 1000 360" preserveAspectRatio="xMidYMid meet">
             <path class="onion-path" d="" aria-hidden="true"/>
@@ -183,6 +184,9 @@
           <ul class="credits-list" data-socials></ul>
           <p class="credits-name">Savio Cavalcante</p>
           <p class="credits-roles" data-roles-line></p>
+          <button class="credits-home" type="button" data-home-end data-t-attr="aria-label:ui.home">
+            <span class="portal" aria-hidden="true"><span class="portal-a"></span><span class="portal-b"></span><span class="portal-core"></span></span>
+          </button>
         </div>
       </div>
     </div>
@@ -195,12 +199,14 @@
 </nav>
 
 <div class="grain" aria-hidden="true"></div>
+<div class="warp" data-warp aria-hidden="true"></div>
 
 <script defer src="../shared/content.js"></script>
 <script defer src="../shared/site.js"></script>
 <script defer src="cordas.js"></script>
 <script defer src="kinetic.js"></script>
 <script defer src="lattice.js"></script>
+<script defer src="halftone.js"></script>
 <script defer src="shapes.js"></script>
 <script defer src="cenas.js"></script>
 <script defer src="v1.js"></script>

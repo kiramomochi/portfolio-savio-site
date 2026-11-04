@@ -1207,7 +1207,8 @@
       if (a === hoverLink) return;
       hoverLink = a;
       if (!a || !cgrid || !motionOn() || E.overview()) return;
-      var b = $('.c-value', a).getBoundingClientRect();
+      // o botão do WhatsApp não tem .c-value: a onda sai do botão inteiro
+      var b = ($('.c-value', a) || a).getBoundingClientRect();
       var p = toLocal(creditsFrame, b.left + b.width / 2, b.top + b.height / 2);
       cgrid.ripple(p.x, p.y, 0.7);
     }
@@ -1289,6 +1290,10 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
     var readCount = $('.readout-count'), readWork = $('.readout-work');
     var NS = 'http://www.w3.org/2000/svg';
     var worksFrame = $('.frame--works'), foldersHost = $('.folders');
+    // a retícula do fundo e do título (halftone.js): sem ela ficam o título em texto e a grade parada
+    var worksCopy = $('.works-copy', worksFrame), htCanvas = $('.halftone', worksFrame);
+    var ht = htCanvas && global.HalftoneField ? global.HalftoneField.create(htCanvas, { bg: '#070707', ink: '#f1f0ec', hot: '#ffa64d' }) : null;
+    if (ht) worksFrame.classList.add('has-halftone');
 
     // a pasta, nas medidas do componente (px de palco): fundo com a aba, folhas, frente de vidro
     var GF_W = 340, GF_H = 272, GF_FRONT = 74;
@@ -1400,6 +1405,8 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
     function focusWork(k) {
       if (folder.open) return;
       bump(); splash();
+      // a queda manda um anel manso da boca do bolso para a retícula
+      if (ht && onion.P) ht.ripple(onion.P[6], onion.P[7], 0.4, 700);
       callSheet(k);
       wk.callEnd = clock + WK_CALL;
       wk.cur = k;
@@ -1431,8 +1438,10 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       // clique no vazio: fecha a pasta aberta; fechada, joga um ponto dali até ela
       worksFrame.addEventListener('click', function (e) {
         if (folder.open) { setOpen(false); return; }
-        if (!motionOn() || e.target.closest('.note, a, button')) return;
+        if (!motionOn() || !onion.P || e.target.closest('.note, a, button')) return;
         var p = toLocal(worksFrame, e.clientX, e.clientY);
+        // com a retícula, o clique arranca os pontos dali e eles voam em fila até o bolso
+        if (ht) { wk.toss = { land: clock + ht.burst(p.x, p.y, onion.P[6], onion.P[7], onion.h) }; return; }
         wk.toss = { x: p.x, y: p.y, t0: clock };
       });
       // o bilhete ao lado da pasta também abre
@@ -1506,6 +1515,17 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       var c = $('.works-copy');
       return c ? c.offsetTop + c.offsetHeight : 0;
     }
+    // o título em meio-tom: a primeira palavra numa linha e o resto na outra, no maior corpo
+    // que cabe (edges: até onde cada linha pode ir); a linha do trabalho da vez desce para
+    // baixo do desenho, e o h2 fica para os leitores de tela
+    function layoutWordmark(edges, maxH) {
+      var words = t('ch.works').split(' '), lines = words.length > 1 ? [words[0], words.slice(1).join(' ')] : words;
+      var x0 = worksCopy.offsetLeft, y0 = worksCopy.offsetTop;
+      var wd = parseFloat(root.style.getPropertyValue('--wdth')) || 125;
+      var fit = ht.title(lines, { x: x0, y: y0, w: edges.map(function (e) { return Math.max(40, e - x0); }), h: maxH },
+        onion.portrait ? 'normal' : wd >= 116 ? 'expanded' : 'semi-expanded');
+      worksFrame.style.setProperty('--ht-gap', Math.max(0, fit.bottom - y0).toFixed(1) + 'px');
+    }
     // a pasta à direita (embaixo, no retrato); o arco sobe do lado do título e mergulha no bolso dela
     function layoutOnion() {
       var w = worksFrame.clientWidth || 1000, h = worksFrame.clientHeight || 360;
@@ -1513,9 +1533,17 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       onion.svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
       onion.portrait = w / h < 1;
       onion.r = clamp(Math.min(w, h) * 0.024, 8, 18);
+      if (ht) ht.resize(w, h);
       var s, x, yb;
-      if (!onion.portrait) { s = Math.min(w * 0.33 / GF_W, h * 0.44 / GF_H); x = w * 0.66 - GF_W * s / 2; yb = h * 0.88; }
-      else {
+      if (!onion.portrait) {
+        s = Math.min(w * 0.33 / GF_W, h * 0.44 / GF_H); x = w * 0.66 - GF_W * s / 2; yb = h * 0.88;
+        // com o título grande, a pasta chega um pouco para a direita e a segunda linha para antes dela
+        if (ht) {
+          s = Math.min(w * 0.28 / GF_W, h * 0.42 / GF_H); x = w * 0.735 - GF_W * s / 2;
+          layoutWordmark([w * 0.92, x - w * 0.035], h * 0.36);
+        }
+      } else {
+        if (ht) layoutWordmark([w * 0.94], h * 0.2);
         s = Math.min(w * 0.82 / GF_W, h * 0.34 / GF_H); x = (w - GF_W * s) / 2;
         yb = h * 0.92 - Math.max(0, (h * 0.92 - copyBottom() - GF_H * s - h * 0.3) / 2);
       }
@@ -1523,7 +1551,10 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       var cx = x + GF_W * s / 2, top = yb - GF_H * s, pocket = top + (GF_FRONT + 44) * s;
       onion.P0 = onion.portrait
         ? [w * -0.03, top - h * 0.06, w * 0.24, top - h * 0.24, cx, top - h * 0.3, cx, pocket]
+        : ht ? [w * -0.03, h * 0.8, w * 0.3, h * 0.86, cx, top - h * 0.34, cx, pocket]
         : [w * -0.03, h * 0.64, w * 0.3, h * 0.66, cx, h * -0.06, cx, pocket];
+      // a luz mansa da retícula fica embaixo da pasta
+      if (ht) ht.pool(cx, yb - GF_H * s * 0.3, GF_W * s * 1.05, GF_H * s * 0.95);
       bendArc(wk.bx, wk.by);
       onion.dot.setAttribute('r', onion.r);
       if (onion.toss) onion.toss.setAttribute('r', onion.r);
@@ -1563,10 +1594,21 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       wk.bx += (tx - wk.bx) * f; wk.by += (ty - wk.by) * f;
       if (Math.abs(wk.bx - wk.ax) + Math.abs(wk.by - wk.ay) > 0.6) bendArc(wk.bx, wk.by);
     }
-    // o ponto jogado: uma parábola do clique até o bolso; ao cair, adianta o trabalho e
-    // acerta o relógio do ponto do arco para ele seguir a partir dali
+    // a queda do que o clique jogou: adianta o trabalho e acerta o relógio do ponto do arco
+    // para ele seguir a partir dali (o seguinte ao da vez, decidido na queda: o ponto do arco
+    // pode ter caído antes)
+    function landToss(T) {
+      var k = (wk.cur + 1) % nW;
+      wk.toss = null;
+      wk.start = T - (k * WK_SPAN + WK_STEP + 0.01);
+      wk.landed = k;
+      focusWork(k);
+    }
+    // o ponto jogado: uma parábola do clique até o bolso
     function drawToss(T) {
       var tz = wk.toss, P = onion.P;
+      // com a retícula os pontos voam por conta dela: aqui só a hora em que o primeiro cai
+      if (ht) { if (tz && T >= tz.land) landToss(T); return; }
       if (!onion.toss) return;
       if (!tz) { onion.toss.setAttribute('opacity', '0'); return; }
       var u = clamp((T - tz.t0) / WK_TOSS, 0, 1), e = u * u * (3 - 2 * u);
@@ -1577,13 +1619,8 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       onion.toss.setAttribute('r', (onion.r * (1 - 0.35 * e)).toFixed(1));
       onion.toss.setAttribute('opacity', '1');
       if (u >= 1) {
-        // o trabalho seguinte ao da vez (decidido na queda: o ponto do arco pode ter caído antes)
-        var k = (wk.cur + 1) % nW;
-        wk.toss = null;
         onion.toss.setAttribute('opacity', '0');
-        wk.start = T - (k * WK_SPAN + WK_STEP + 0.01);
-        wk.landed = k;
-        focusWork(k);
+        landToss(T);
       }
     }
     function placeDot(u, r) {
@@ -1628,11 +1665,17 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       var i = Math.min(nW - 1, Math.floor(tau / span)), inStep = tau - i * span;
       var lead = M.ease.inOut(clamp(inStep / WK_STEP, 0, 1));
       var u = lerp(onion.u0, 1, lead), landed = inStep >= WK_STEP;
-      placeDot(u, onion.r * (landed ? 0.6 : 1));
-      onion.dot.setAttribute('opacity', landed ? '0' : '1');
-      onion.run.setAttribute('stroke-dashoffset', (1000 * (1 - lenFrac(u))).toFixed(1));
-      onion.run.setAttribute('opacity', (landed ? 0.45 * (1 - clamp((inStep - WK_STEP) / WK_HOLD * 1.6, 0, 1)) : 0.45).toFixed(3));
-      placeGhosts(lead, landed ? 1 - clamp((inStep - WK_STEP) * 3, 0, 1) : 1);
+      if (ht) {
+        // com a retícula, o ponto é a cabeça de um cometa que acende os pontos por onde passa
+        var hp = onionPoint(u);
+        ht.comet(hp.x, hp.y, !landed && !folder.open);
+      } else {
+        placeDot(u, onion.r * (landed ? 0.6 : 1));
+        onion.dot.setAttribute('opacity', landed ? '0' : '1');
+        onion.run.setAttribute('stroke-dashoffset', (1000 * (1 - lenFrac(u))).toFixed(1));
+        onion.run.setAttribute('opacity', (landed ? 0.45 * (1 - clamp((inStep - WK_STEP) / WK_HOLD * 1.6, 0, 1)) : 0.45).toFixed(3));
+        placeGhosts(lead, landed ? 1 - clamp((inStep - WK_STEP) * 3, 0, 1) : 1);
+      }
       if (landed) { if (wk.landed !== i) { wk.landed = i; focusWork(i); } }
       else if (wk.landed === i) wk.landed = -1;
     }
@@ -1668,8 +1711,16 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       });
       renderWork();
     }
-    // sem animação: o caminho inteiro e o ponto chegando na pasta
+    // a retícula a cada quadro: o ponteiro só conta com o movimento ligado
+    function worksFx(dt) {
+      if (!ht) return;
+      var live = motionOn();
+      var gp = live && ptr.on && !E.overview() ? toLocal(worksFrame, ptr.x, ptr.y) : null;
+      ht.frame(dt, gp ? gp.x : 0, gp ? gp.y : 0, !!(gp && gp.inside), live);
+    }
+    // sem animação: o caminho inteiro e o ponto chegando na pasta (com a retícula, só ela parada)
     function staticOnion() {
+      if (ht) { ht.comet(0, 0, false); ht.touch(); }
       if (!onion.P) return;
       onion.ghosts.forEach(function (g, k) {
         var gp = onionPoint(uAtLen(lerp(0.02, 0.86, M.ease.inOut(k / (WGN - 1)))));
@@ -2276,6 +2327,7 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
         if (SC.works.vis) drawOnion(clock);
         if (SC.close.vis) creditsFx(dt, v);
       }
+      if (SC.works.vis) worksFx(dt);
       tickPlaceholders(clock);
     }
 
@@ -2295,6 +2347,8 @@ do outro: um ponto percorre um arco que se curva na direção do cursor e cai na
       renderHint();
       renderGraph();
       renderFolder();
+      // o título em meio-tom muda de palavras: a retícula refaz as letras
+      if (ht) layoutOnion();
       setRole(roleIdx, clock);
       layoutTitle();
     }
