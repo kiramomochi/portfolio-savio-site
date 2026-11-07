@@ -10,7 +10,11 @@
 <link rel="preload" href="../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../shared/base.css">
 <link rel="stylesheet" href="v1.css">
-<script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
+<script>
+var r = document.documentElement; r.className = r.className.replace('no-js', 'js');
+// a largura da fonte já na primeira pintura (a mesma conta do refitTitle, em cenas.js): trocá-la depois refaz todos os títulos
+r.style.setProperty('--wdth', Math.min(125, Math.max(62, 62 + ((innerWidth - 40) / Math.max(1, innerHeight - 100) - 0.56) * (63 / 1.22))).toFixed(1) + '%');
+</script>
 </head>
 <body>
 
