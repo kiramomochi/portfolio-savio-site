@@ -34,6 +34,7 @@ r.style.setProperty('--wdth', Math.min(125, Math.max(62, 62 + ((innerWidth - 40)
     <div class="stage">
       <div class="frame frame--title">
         <canvas class="title-light" aria-hidden="true"></canvas>
+        <div class="title-mood" aria-hidden="true"><span class="mood-heat"></span><span class="mood-flash"></span></div>
         <div class="sign" aria-hidden="true">
           <svg viewBox="1139 1286 1095 1051"><path pathLength="1" d="M2214.42 1480.5c-15.27,-260.93 -1231.63,-60.61 -1033.63,163.5 156.82,177.48 956.57,133.69 912.65,528.95 -23.92,215.3 -619.64,224.87 -542.91,-223.02 33.31,-194.45 523.17,-281.6 438.86,-414.32 -24.3,-38.25 -336.52,-312.14 -374.42,-205.23 -34.31,96.77 -63.58,623.52 -63.58,742.83 -1.21,-1.24 81.66,-299.99 88.69,-342.28 17.14,-103.12 29.85,-121.51 89.98,18.8 120.08,280.19 -41.74,291.83 49.95,131.03 35.42,-62.13 177.4,-24.04 45.92,-19.37 -99.65,3.53 235.9,-34.82 70.75,11.33l-18.8 9.62"/></svg>
         </div>
@@ -41,16 +42,22 @@ r.style.setProperty('--wdth', Math.min(125, Math.max(62, 62 + ((innerWidth - 40)
           <span class="name-line" data-fit>Savio</span>
           <span class="name-line" data-fit>Cavalcante</span>
         </h1>
+        <svg class="title-cord" aria-hidden="true" focusable="false"><defs><linearGradient id="cord-arc-fade" gradientUnits="userSpaceOnUse" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-opacity="0"/><stop offset="1" stop-opacity="1"/></linearGradient></defs><path class="cord-arc" d=""/><path class="cord-glow" d=""/><path class="cord-base" d=""/><path class="cord-hot" d="" pathLength="1" stroke-dasharray="0 1"/></svg>
         <div class="title-sub">
           <p class="roles" aria-hidden="true"><span class="cells"></span></p>
           <p class="sr-only" data-roles-text></p>
           <p class="lead" data-t="v1.lead"></p>
           <p class="title-play">
-            <span class="title-box"><span class="title-tint" aria-hidden="true"></span><span class="title-text" data-t="v1.box">Clique, arraste!</span><span class="title-drop" aria-hidden="true"><svg viewBox="0 0 24 60"><path d="M4 6L12 14L20 6"/><path d="M4 24L12 32L20 24"/><path d="M4 42L12 50L20 42"/></svg></span></span>
+            <span class="title-box"><span class="title-tint" aria-hidden="true"></span><span class="title-text" data-t="v1.box">Arraste</span><span class="title-drop" aria-hidden="true"><svg viewBox="0 0 24 60"><path d="M4 6L12 14L20 6"/><path d="M4 24L12 32L20 24"/><path d="M4 42L12 50L20 42"/></svg></span></span>
           </p>
         </div>
+        <span class="cue cue-pull" aria-hidden="true"><span class="cue-in"><span class="cue-disc"><svg viewBox="0 0 24 24"><path d="M12 19.5V5.5M6 11.5L12 5.5L18 11.5"/></svg></span><span class="cue-word" data-t="v1.box.pull">Puxe</span></span></span>
+        <span class="cue cue-release" aria-hidden="true"><span class="cue-in"><svg viewBox="0 0 24 24"><path d="M12 4.5V18.5M6 12.5L12 18.5L18 12.5"/></svg><span class="cue-word" data-t="v1.box.release">Solte</span></span></span>
         <p class="title-hint" data-hint></p>
-        <span class="title-zone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4V19M6 13L12 19L18 13"/></svg><span data-t="v1.box.zone">ARREMESSE</span></span>
+        <span class="title-zone" aria-hidden="true">
+          <span class="anchor-peg"><svg class="zone-target" viewBox="0 0 20 20"><circle class="zone-ping" cx="10" cy="10" r="8"/><circle class="zone-ping zone-ping--2" cx="10" cy="10" r="8"/><circle cx="10" cy="10" r="8"/><circle cx="10" cy="10" r="4.4"/><circle class="zone-dot" cx="10" cy="10" r="1.9"/></svg></span>
+          <span class="zone-label" data-t="v1.box.zone">Solte para ver trabalhos</span>
+        </span>
       </div>
     </div>
   </section>
