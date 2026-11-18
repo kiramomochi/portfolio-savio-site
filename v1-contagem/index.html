@@ -179,9 +179,14 @@ r.style.setProperty('--wdth', Math.min(125, Math.max(62, 62 + ((innerWidth - 40)
     </div>
   </section>
 
-  <section class="scene scene--reels" id="videos" data-scene="reels" style="--len: 5.2" data-t-attr="aria-label:a.reels">
+  <section class="scene scene--reels" id="videos" data-scene="reels" data-t-attr="aria-label:a.reels">
     <div class="stage">
       <div class="strip" data-works></div>
+      <div class="reel-nav">
+        <button type="button" class="reel-arrow reel-arrow--prev" data-reel-prev><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></button>
+        <div class="reel-dots" data-reel-dots></div>
+        <button type="button" class="reel-arrow reel-arrow--next" data-reel-next><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 5.5L16 12l-6.5 6.5"/></svg></button>
+      </div>
     </div>
   </section>
 
